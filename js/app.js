@@ -109,7 +109,7 @@ function borneHtml(c) {
 }
 function vueAccueil() {
   const p = prochaine(), debut = totalFaits() === 0;
-  app.innerHTML = `<div class="accueil-tete"><p class="devise" lang="la">Per aspera ad astra</p><h1 tabindex="-1">La langue latine, pas à pas</h1>
+  app.innerHTML = `<div class="accueil-tete"><p class="devise" lang="la">Per aspera ad astra</p><h1 tabindex="-1">Ad astra, le latin au lycée Antoine de Saint-Exupéry, La Rochelle</h1>
 <p>${CHAPS.filter(c => !c.borne).length} chapitres qui suivent le cours : des leçons courtes, puis des formes à reconnaître et à analyser, et des phrases à traduire. Chaque étape validée rapporte des points. En fin de parcours, les Terminales de spécialité traduisent le livre III des <em>Tristes</em> d'Ovide.</p></div>
 ${p ? `<div class="reprendre"><div><span class="muet">${debut ? "Pour commencer" : "Reprendre où tu en étais"}</span><strong>${nomChap(p.c)} : ${h(p.c.titre)}</strong><span class="muet">Étape ${p.i + 1} sur ${p.c.etapes.length}</span></div><div class="actions" style="margin:0"><a class="btn" href="#${p.c.id}-${p.i + 1}">${debut ? "Commencer" : "Continuer"}</a>${p.c.facultatif ? `<button class="btn discret" type="button" id="passer">Passer ce chapitre</button>` : ""}</div></div>` : `<div class="reprendre"><div><strong>Parcours terminé. Optime !</strong><span class="muet">Tu peux refaire les étapes pour gagner des étoiles, ou t'entraîner dans l'atelier.</span></div><a class="btn" href="#atelier">Ouvrir l'atelier</a></div>`}
 <p class="vers-devoirs"><a href="#devoirs">Devoirs et examens : les révisions par niveau</a></p>
