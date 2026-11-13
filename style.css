@@ -363,3 +363,12 @@ button.retirer:hover { border-color: var(--minium); color: var(--minium); }
 .vers-devoirs a { display: inline-block; font-weight: 700; padding: .55rem .9rem; border: 2px solid var(--pourpre); border-radius: 10px; text-decoration: none; color: var(--pourpre); }
 @media (max-width: 700px) { nav.principal a { padding: .4rem .5rem; font-size: .9rem; } }
 @media (max-width: 370px) { nav.principal { gap: 0; } nav.principal a { padding: .4rem .35rem; font-size: .84rem; } }
+/* Vocabulaire et texte numéroté */
+.mot-latin { font: italic 700 1.7rem var(--texte); margin: .6rem 0 .9rem; }
+.choix button.faux { border-color: var(--minium); }
+ol.vers { margin: .8rem 0 1.2rem; padding-left: 2.4rem; }
+ol.vers li { font-style: italic; font-size: 1.08rem; line-height: 1.7; }
+ol.vers li::marker { font-style: normal; font-size: .8rem; color: var(--encre2); }
+ol.vers li:nth-child(even) { padding-left: 1.2rem; }
+.mots-liste th { font-style: italic; font-weight: 700; text-align: left; }
+.phrase .lat { line-height: 1.6; }

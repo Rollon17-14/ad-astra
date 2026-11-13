@@ -2,7 +2,7 @@
    AD ASTRA — moteur du site (navigation, étapes, progression, atelier, lexique, profil).
    Le contenu est dans contenu1.js … contenu4.js ; les formes latines dans formes.js.
    ============================================================ */
-const PARCOURS = [...(window.PARTIE1 || []), ...(window.PARTIE2 || []), ...(window.PARTIE3 || []), ...(window.PARTIE4 || []), ...(window.PARTIE_TRAD || []), ...(window.PARTIE5 || []), ...(window.PARTIE_TRISTES || []), ...(window.PARTIE_BILAN || [])];
+const PARCOURS = [...(window.PARTIE1 || []), ...(window.PARTIE2 || []), ...(window.PARTIE3 || []), ...(window.PARTIE4 || []), ...(window.PARTIE_TRAD || []), ...(window.PARTIE5 || []), ...(window.PARTIE_TRISTES || []), ...(window.PARTIE_VOCAB || []), ...(window.PARTIE_BILAN || [])];
 const CHAPS = PARCOURS.flatMap(p => p.chapitres.map(c => (c.partie = p, c)));
 /* La numérotation suit l'ordre du parcours ; la progression, elle, est enregistrée par identifiant (c1, c2…). */
 { let n = 0; CHAPS.forEach(c => { if (!c.borne) c.num = ++n; }); }
@@ -12,8 +12,8 @@ const nomChap = c => c.borne ? (c.genre || "Tristes") + " " + c.borne : "Chapitr
 const chapDe = n => CHAPS.find(c => c.id === "c" + n);
 const PARCOURS_VUE = PARCOURS.filter(p => !p.devoir), CHAPS_VUE = CHAPS.filter(c => !c.partie.devoir);
 const CLE = "vialatina.v1";
-const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, nominal: 20, quiz: 20, version: 25, guide: 30 };
-const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", nominal: "Analyse nominale", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
+const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, nominal: 20, mots: 15, quiz: 20, version: 25, guide: 30 };
+const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", nominal: "Analyse nominale", mots: "Vocabulaire", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
 const NIVEAUX = [[0, "Tiro (recrue)"], [150, "Discipulus (élève)"], [450, "Miles (soldat)"], [900, "Centurio (centurion)"], [1500, "Tribunus (tribun)"], [2200, "Consul"], [3000, "Imperator"]];
 const ROMAINS = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL"];
 
@@ -124,7 +124,7 @@ function vueDevoirs() {
   app.innerHTML = `<h1 tabindex="-1">Devoirs et examens</h1><p class="muet">Les révisions préparées pour chaque devoir : une fiche de ce qu'il faut savoir, puis des entraînements construits comme le sujet.</p>
 ${NIVEAUX_DEVOIRS.map(([niv, ancre]) => {
     const parties = PARCOURS.filter(p => p.devoir === niv);
-    return `<section class="niveau-devoirs" id="dv-${ancre}"><h2 class="niveau-titre">${niv}</h2>${parties.length ? parties.map(pa => `<div class="partie"><h3>${h(pa.titre)}</h3><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol>`).join("") : `<p class="muet">Aucun devoir annoncé pour l'instant. Les révisions apparaîtront ici.</p>`}${niv === "Terminale" && window.PARTIE_TRISTES ? `<p class="vers-devoirs"><a href="#c28">Pour s'entraîner toute l'année : Traduisons le livre III des <em>Tristes</em> d'Ovide</a></p>` : ""}</section>`;
+    return `<section class="niveau-devoirs" id="dv-${ancre}"><h2 class="niveau-titre">${niv}</h2>${parties.length ? parties.map(pa => `<div class="partie"><h3>${h(pa.titre)}</h3><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol>`).join("") : `<p class="muet">Aucun devoir annoncé pour l'instant. Les révisions apparaîtront ici.</p>`}${niv === "Terminale" && window.PARTIE_TRISTES ? `<p class="vers-devoirs"><a href="#c28">Pour s'entraîner toute l'année : Traduisons le livre III des <em>Tristes</em> d'Ovide</a></p><p class="vers-devoirs"><a href="#c52">Apprendre le vocabulaire des <em>Tristes</em> : 300 mots à connaître</a></p>` : ""}</section>`;
   }).join("")}`;
 }
 const filDebut = c => c.partie.devoir ? `<a href="#devoirs">Devoirs et examens</a>` : `<a href="#parcours">Parcours</a>`;
@@ -156,7 +156,7 @@ function vueEtape(c, i) {
 <h1 tabindex="-1">${h(e.titre || NOMS_ETAPES[e.t])}</h1>
 <div class="points" aria-hidden="true">${c.etapes.map((x, k) => `<a href="#${c.id}-${k + 1}" class="${k === i ? "ici" : fait(c, k) ? "fait" : ""}" tabindex="-1"></a>`).join("")}</div>
 <div class="carte" id="zone"></div><div id="apres"></div>`;
-  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, nominal: etapeNominal, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
+  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, nominal: etapeNominal, mots: etapeMots, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
 }
 const lienSuivant = (c, i) => i + 1 < c.etapes.length ? `#${c.id}-${i + 2}` : `#${c.id}-fin`;
 /* Bandeau de réussite : enregistre, affiche l'explication et le bouton « Étape suivante ». */
@@ -371,6 +371,27 @@ function etapeNominal(z, c, i, e) {
   };
 }
 
+/* ---------- Vocabulaire : du mot latin à son sens, les mots manqués reviennent ---------- */
+function etapeMots(z, c, i, e) {
+  const cle = m => m[1].split(/[,;(]/)[0].trim();
+  let file = melanger(e.mots), err = 0, faits = 0; const total = e.mots.length;
+  z.innerHTML = enTete(e) + `<p class="muet" id="m-av"></p><div id="m-q"></div>`;
+  function suivant() {
+    $("#m-av", z).textContent = `${faits} mot${faits > 1 ? "s" : ""} sur ${total}`;
+    if (!file.length) { $("#m-q", z).innerHTML = ""; succes(c, i, etoilesPour(err), ""); return; }
+    const m = file[0], autres = melanger((e.banque || e.mots).filter(x => cle(x) !== cle(m))).filter((x, k, t) => t.findIndex(y => cle(y) === cle(x)) === k).slice(0, 3), ch = melanger([m, ...autres]);
+    $("#m-q", z).innerHTML = `<p class="mot-latin" lang="la">${h(m[0])}</p><div class="choix">${ch.map((x, k) => `<button type="button" class="choix-btn" data-k="${k}">${h(x[1])}</button>`).join("")}</div><div id="m-ret"></div>`;
+    $$(".choix-btn", z).forEach(b => b.onclick = () => {
+      const ok = ch[+b.dataset.k] === m;
+      $$(".choix-btn", z).forEach(x => { x.disabled = true; if (ch[+x.dataset.k] === m) x.classList.add("juste"); });
+      file.shift();
+      if (ok) { faits++; setTimeout(suivant, 450); }
+      else { b.classList.add("faux"); err++; file.push(m); $("#m-ret", z).innerHTML = `<div class="retour non"><i class="la"><b>${h(m[0])}</b></i> : ${h(m[1])}. Ce mot reviendra.</div><div class="actions"><button class="btn" type="button" id="m-suite">Continuer</button></div>`; $("#m-suite", z).onclick = suivant; $("#m-suite", z).focus(); }
+    });
+  }
+  suivant();
+}
+
 function etapeVersion(z, c, i, e) {
   let reste = e.phrases.length, justes = 0;
   z.innerHTML = enTete(e) + `<p class="muet">Écris ta traduction, puis compare-la à la traduction proposée. C'est toi qui t'évalues : sois honnête, c'est ainsi qu'on progresse.</p>` +
@@ -395,7 +416,7 @@ function colorerCas(racine) {
 function etapeGuide(z, c, i, e) {
   const jetons = e.la.split(" "), coupes = new Set(), mots = [];
   jetons.forEach(j => j === "/" ? coupes.add(mots.length) : mots.push(j));
-  const net = m => m.replace(/[.,;:!?()]/g, ""), cas = e.cas ? e.cas.split(" ") : null;
+  const net = m => m.replace(/[.,;:!?()«»"]/g, ""), cas = e.cas ? e.cas.split(" ") : null;
   const cls = (n, marque) => cas ? "c-" + cas[n] : classeMarque(marque);
   let k = 0, err = 0;
   z.innerHTML = enTete(e) + `<div class="guide-phrase" lang="la">${mots.map((m, n) => `${coupes.has(n) ? '<span class="coupe"></span>' : ""}<button type="button" class="mot" data-n="${n}" aria-pressed="false" disabled>${m}</button>`).join("")}</div>${cas ? LEGENDE_CAS : ""}
@@ -508,7 +529,7 @@ function questionAtelier() {
 /* ---------- Lexique ---------- */
 const L = { q: "", ch: "", fiches: false, pile: [], vu: false };
 function vueLexique() {
-  app.innerHTML = `<h1 tabindex="-1">Lexique</h1><p class="muet">${LEXIQUE.length} mots rencontrés dans les chapitres. Les noms sont donnés avec leur génitif et leur genre, les verbes avec leurs temps primitifs.</p>
+  app.innerHTML = `<h1 tabindex="-1">Lexique</h1><p class="muet">${LEXIQUE.length} mots : ceux des chapitres et les 300 mots du vocabulaire des Tristes. Les noms sont donnés avec leur génitif et leur genre, les verbes avec leurs temps primitifs.</p>
 <div class="filtres"><label class="sr" for="lx-q">Chercher un mot</label><input type="text" id="lx-q" placeholder="Chercher un mot latin ou français" value="${h(L.q)}"><label class="sr" for="lx-ch">Chapitre</label><select id="lx-ch"><option value="">Tous les chapitres</option>${CHAPS.filter(c => LEXIQUE.some(m => "c" + m.ch === c.id)).map(c => `<option value="${c.id.slice(1)}" ${c.id.slice(1) === L.ch ? "selected" : ""}>${lab(c)}. ${h(c.titre)}</option>`).join("")}</select>
 <button class="btn second" type="button" id="lx-mode">${L.fiches ? "Voir la liste" : "Réviser en fiches"}</button></div><div id="lx"></div>`;
   $("#lx-q").oninput = ev => { L.q = ev.target.value; L.pile = []; dessinerLexique(); };
