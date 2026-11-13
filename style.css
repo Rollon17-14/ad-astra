@@ -354,3 +354,12 @@ button.retirer:hover { border-color: var(--minium); color: var(--minium); }
 .lex-fiche { columns: 2 16rem; column-gap: 2rem; padding-left: 1.1rem; margin: .3rem 0 1rem; }
 .lex-fiche li { break-inside: avoid; margin-bottom: .15rem; }
 .analyse .mot:empty { display: none; }
+
+/* Onglet « Devoirs et examens » */
+@media (max-width: 700px) { nav.principal .long { display: none; } }
+.niveau-titre { font-size: 1.6rem; border-bottom: 3px solid var(--pourpre); padding-bottom: .3rem; margin: 2rem 0 .8rem; }
+.niveau-devoirs .partie h3 { font-size: 1.15rem; margin: 0; }
+.vers-devoirs { margin: .8rem 0; }
+.vers-devoirs a { display: inline-block; font-weight: 700; padding: .55rem .9rem; border: 2px solid var(--pourpre); border-radius: 10px; text-decoration: none; color: var(--pourpre); }
+@media (max-width: 700px) { nav.principal a { padding: .4rem .5rem; font-size: .9rem; } }
+@media (max-width: 370px) { nav.principal { gap: 0; } nav.principal a { padding: .4rem .35rem; font-size: .84rem; } }

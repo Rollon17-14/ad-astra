@@ -10,6 +10,7 @@ const CHAPS = PARCOURS.flatMap(p => p.chapitres.map(c => (c.partie = p, c)));
 const lab = c => c.borne || ROMAINS[c.num];
 const nomChap = c => c.borne ? (c.genre || "Tristes") + " " + c.borne : "Chapitre " + ROMAINS[c.num];
 const chapDe = n => CHAPS.find(c => c.id === "c" + n);
+const PARCOURS_VUE = PARCOURS.filter(p => !p.devoir), CHAPS_VUE = CHAPS.filter(c => !c.partie.devoir);
 const CLE = "vialatina.v1";
 const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, nominal: 20, quiz: 20, version: 25, guide: 30 };
 const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", nominal: "Analyse nominale", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
@@ -99,25 +100,37 @@ $("#btn-theme").addEventListener("click", () => {
 /* ---------- Vues : accueil, chapitre, fin ---------- */
 const app = $("#app");
 function prochaine() {
-  for (const c of CHAPS) { const n = nbFaits(c); if (!chapPasse(c) && n > 0 && n < c.etapes.length) return { c, i: c.etapes.findIndex((e, k) => !fait(c, k)) }; }
-  const c = CHAPS.find(x => nbFaits(x) === 0 && !chapPasse(x)); return c ? { c, i: 0 } : null;
+  for (const c of CHAPS_VUE) { const n = nbFaits(c); if (!chapPasse(c) && n > 0 && n < c.etapes.length) return { c, i: c.etapes.findIndex((e, k) => !fait(c, k)) }; }
+  const c = CHAPS_VUE.find(x => nbFaits(x) === 0 && !chapPasse(x)); return c ? { c, i: 0 } : null;
+}
+function borneHtml(c) {
+  const n = nbFaits(c), t = c.etapes.length;
+  return `<li><a class="borne-lien" href="#${c.id}"><span class="borne ${c.borne ? "longue " : ""}${n === t ? "fini" : chapPasse(c) ? "passe" : n ? "encours" : ""}" aria-hidden="true">${lab(c)}</span><span class="borne-txt"><strong>${h(c.titre)}</strong><span>${h(c.resume)}</span><span class="jauge"><i style="width:${Math.round(100 * n / t)}%"></i></span><span>${chapPasse(c) ? "Chapitre passé · " : c.facultatif && !n ? "Facultatif · " : ""}${n} étape${n > 1 ? "s" : ""} sur ${t}</span></span></a></li>`;
 }
 function vueAccueil() {
   const p = prochaine(), debut = totalFaits() === 0;
   app.innerHTML = `<div class="accueil-tete"><p class="devise" lang="la">Per aspera ad astra</p><h1 tabindex="-1">La langue latine, pas à pas</h1>
-<p>${CHAPS.filter(c => !c.borne).length} chapitres qui suivent le cours : des leçons courtes, puis des formes à écrire, des analyses et des phrases à traduire. Chaque étape validée rapporte des points. En fin de parcours, les Terminales de spécialité traduisent le livre III des <em>Tristes</em> d'Ovide.</p></div>
+<p>${CHAPS.filter(c => !c.borne).length} chapitres qui suivent le cours : des leçons courtes, puis des formes à reconnaître et à analyser, et des phrases à traduire. Chaque étape validée rapporte des points. En fin de parcours, les Terminales de spécialité traduisent le livre III des <em>Tristes</em> d'Ovide.</p></div>
 ${p ? `<div class="reprendre"><div><span class="muet">${debut ? "Pour commencer" : "Reprendre où tu en étais"}</span><strong>${nomChap(p.c)} : ${h(p.c.titre)}</strong><span class="muet">Étape ${p.i + 1} sur ${p.c.etapes.length}</span></div><div class="actions" style="margin:0"><a class="btn" href="#${p.c.id}-${p.i + 1}">${debut ? "Commencer" : "Continuer"}</a>${p.c.facultatif ? `<button class="btn discret" type="button" id="passer">Passer ce chapitre</button>` : ""}</div></div>` : `<div class="reprendre"><div><strong>Parcours terminé. Optime !</strong><span class="muet">Tu peux refaire les étapes pour gagner des étoiles, ou t'entraîner dans l'atelier.</span></div><a class="btn" href="#atelier">Ouvrir l'atelier</a></div>`}
-<div class="aller"><label for="aller">Aller directement à un chapitre, pour réviser</label><select id="aller"><option value="">Choisir un chapitre…</option>${PARCOURS.map(pa => `<optgroup label="${h(pa.titre)}">${pa.chapitres.map(c => `<option value="${c.id}">${lab(c)}. ${h(c.titre)}${chapFini(c) ? " ✓" : ""}</option>`).join("")}</optgroup>`).join("")}</select></div>
-${PARCOURS.map(pa => `<section><div class="partie"><h2>${h(pa.titre)}</h2><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(c => {
-    const n = nbFaits(c), t = c.etapes.length;
-    return `<li><a class="borne-lien" href="#${c.id}"><span class="borne ${c.borne ? "longue " : ""}${n === t ? "fini" : chapPasse(c) ? "passe" : n ? "encours" : ""}" aria-hidden="true">${lab(c)}</span><span class="borne-txt"><strong>${h(c.titre)}</strong><span>${h(c.resume)}</span><span class="jauge"><i style="width:${Math.round(100 * n / t)}%"></i></span><span>${chapPasse(c) ? "Chapitre passé · " : c.facultatif && !n ? "Facultatif · " : ""}${n} étape${n > 1 ? "s" : ""} sur ${t}</span></span></a></li>`;
-  }).join("")}</ol></section>`).join("")}`;
+<p class="vers-devoirs"><a href="#devoirs">Devoirs et examens : les révisions par niveau</a></p>
+<div class="aller"><label for="aller">Aller directement à un chapitre, pour réviser</label><select id="aller"><option value="">Choisir un chapitre…</option>${PARCOURS_VUE.map(pa => `<optgroup label="${h(pa.titre)}">${pa.chapitres.map(c => `<option value="${c.id}">${lab(c)}. ${h(c.titre)}${chapFini(c) ? " ✓" : ""}</option>`).join("")}</optgroup>`).join("")}</select></div>
+${PARCOURS_VUE.map(pa => `<section><div class="partie"><h2>${h(pa.titre)}</h2><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol></section>`).join("")}`;
   const bp = $("#passer"); if (bp) bp.onclick = () => passerChapitre(p.c);
   $("#aller").onchange = ev => { if (ev.target.value) location.hash = "#" + ev.target.value; };
 }
+/* ---------- Devoirs et examens : les révisions, par niveau ---------- */
+const NIVEAUX_DEVOIRS = [["Première", "premiere"], ["Terminale", "terminale"]];
+function vueDevoirs() {
+  app.innerHTML = `<h1 tabindex="-1">Devoirs et examens</h1><p class="muet">Les révisions préparées pour chaque devoir : une fiche de ce qu'il faut savoir, puis des entraînements construits comme le sujet.</p>
+${NIVEAUX_DEVOIRS.map(([niv, ancre]) => {
+    const parties = PARCOURS.filter(p => p.devoir === niv);
+    return `<section class="niveau-devoirs" id="dv-${ancre}"><h2 class="niveau-titre">${niv}</h2>${parties.length ? parties.map(pa => `<div class="partie"><h3>${h(pa.titre)}</h3><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol>`).join("") : `<p class="muet">Aucun devoir annoncé pour l'instant. Les révisions apparaîtront ici.</p>`}${niv === "Terminale" && window.PARTIE_TRISTES ? `<p class="vers-devoirs"><a href="#c28">Pour s'entraîner toute l'année : Traduisons le livre III des <em>Tristes</em> d'Ovide</a></p>` : ""}</section>`;
+  }).join("")}`;
+}
+const filDebut = c => c.partie.devoir ? `<a href="#devoirs">Devoirs et examens</a>` : `<a href="#parcours">Parcours</a>`;
 function vueChapitre(c) {
   const n = nbFaits(c), suiv = c.etapes.findIndex((e, k) => !fait(c, k));
-  app.innerHTML = `<p class="fil"><a href="#parcours">Parcours</a> › ${h(c.partie.titre)}</p>
+  app.innerHTML = `<p class="fil">${filDebut(c)} › ${h(c.partie.titre)}</p>
 <div class="chap-tete"><span class="borne ${c.borne ? "longue " : ""}${chapFini(c) ? "fini" : n ? "encours" : ""}" aria-hidden="true">${lab(c)}</span><div><h1 tabindex="-1">${h(c.titre)}</h1><p>${h(c.resume)}</p></div></div>
 <a class="btn" href="#${c.id}-${(suiv < 0 ? 0 : suiv) + 1}">${n === 0 ? "Commencer le chapitre" : suiv < 0 ? "Revoir depuis le début" : "Continuer à l'étape " + (suiv + 1)}</a>${c.facultatif && !chapFini(c) ? (chapPasse(c) ? ` <button class="btn discret" type="button" id="depasser">Remettre ce chapitre dans mon parcours</button><p class="muet" style="margin-top:.6rem">Tu as passé ce chapitre : il ne t'est plus proposé, mais tu peux le faire quand tu veux.</p>` : ` <button class="btn discret" type="button" id="passer">Passer ce chapitre</button><p class="muet" style="margin-top:.6rem">${h(c.notePasser || "Ce chapitre est facultatif.")}</p>`) : ""}
 ${(() => { const k = c.etapes.findIndex(e => e.synthese); return k < 0 ? "" : `<p class="reviser"><a class="btn second" href="#${c.id}-${k + 1}">Réviser : ouvrir la fiche synthèse</a></p><p class="muet">Toutes les étapes sont en accès libre : touche celle que tu veux revoir.</p>`; })()}
@@ -132,13 +145,13 @@ function vueFin(c) {
   app.innerHTML = `<div class="carte fin"><h1 tabindex="-1">${chapFini(c) ? nomChap(c) + " : terminé" : "Fin : " + nomChap(c)}</h1>
 <p>${chapFini(c) ? "Bene fecisti ! Toutes les étapes sont validées." : `Il reste ${c.etapes.length - et.length} étape(s) à valider dans ce chapitre.`}</p>
 <dl class="chiffres"><div><dt>Étapes validées</dt><dd>${et.length} / ${c.etapes.length}</dd></div><div><dt>Étoiles</dt><dd>${etoiles} / ${exos * 3}</dd></div><div><dt>Points au total</dt><dd>${S.xp}</dd></div></dl>
-<div class="actions">${suiv ? `<a class="btn" href="#${suiv.id}">Chapitre suivant : ${h(suiv.titre)}</a>` : `<a class="btn" href="#profil">Voir mon profil</a>`}<a class="btn second" href="#${c.id}">Revoir ce chapitre</a><a class="btn discret" href="#parcours">Retour au parcours</a></div></div>`;
+<div class="actions">${suiv ? `<a class="btn" href="#${suiv.id}">Chapitre suivant : ${h(suiv.titre)}</a>` : `<a class="btn" href="#profil">Voir mon profil</a>`}<a class="btn second" href="#${c.id}">Revoir ce chapitre</a><a class="btn discret" href="${c.partie.devoir ? "#devoirs" : "#parcours"}">${c.partie.devoir ? "Retour aux devoirs" : "Retour au parcours"}</a></div></div>`;
 }
 
 /* ---------- Étapes ---------- */
 function vueEtape(c, i) {
   const e = c.etapes[i];
-  app.innerHTML = `<p class="fil"><a href="#parcours">Parcours</a> › <a href="#${c.id}">${nomChap(c)} : ${h(c.titre)}</a></p>
+  app.innerHTML = `<p class="fil">${filDebut(c)} › <a href="#${c.id}">${nomChap(c)} : ${h(c.titre)}</a></p>
 <div class="etape-tete"><span class="type">${e.synthese ? "Fiche synthèse" : NOMS_ETAPES[e.t]}</span><span class="muet">Étape ${i + 1} sur ${c.etapes.length}</span></div>
 <h1 tabindex="-1">${h(e.titre || NOMS_ETAPES[e.t])}</h1>
 <div class="points" aria-hidden="true">${c.etapes.map((x, k) => `<a href="#${c.id}-${k + 1}" class="${k === i ? "ici" : fait(c, k) ? "fait" : ""}" tabindex="-1"></a>`).join("")}</div>
@@ -610,10 +623,11 @@ const o_a = (o, c) => /[1-3]/.test(o.f[c.id] || "");
 function route() {
   const r = location.hash.replace(/^#\/?/, "") || "parcours";
   const m = r.match(/^(c\d+)(?:-(\d+|fin))?$/), c = m && CHAPS.find(x => x.id === m[1]);
-  let onglet = "parcours";
+  let onglet = c && c.partie.devoir ? "devoirs" : "parcours";
   if (c && m[2] === "fin") vueFin(c);
   else if (c && m[2] && c.etapes[+m[2] - 1]) vueEtape(c, +m[2] - 1);
   else if (c) vueChapitre(c);
+  else if (r === "devoirs") { onglet = r; vueDevoirs(); }
   else if (r === "atelier") { onglet = r; vueAtelier(); }
   else if (r === "lexique") { onglet = r; vueLexique(); }
   else if (r === "profil") { onglet = r; vueProfil(); }

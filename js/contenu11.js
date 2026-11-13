@@ -198,7 +198,7 @@ ${T("À connaître absolument", ["Terminaison", "Analyses possibles"], [
      ["Copiae Romanae <u>a servis</u> terrentur.", "Agent", "Les troupes romaines sont effrayées par les esclaves.", "(a + ablatif, avec un verbe passif)"],
      ["Multi servi <u>in via Appia</u> puniuntur.", "Lieu", "De nombreux esclaves sont punis sur la voie Appienne.", "(lieu où l'on est : in + ablatif)"]]);
 
-  return [{ id: "p8", titre: "Révisions du devoir bilan (1LLCAL1, 2026-2027)",
-    sous: "Première, spécialité. Une fiche de révision, puis trois entraînements construits comme le devoir : analyse verbale, analyse nominale, actif et passif, compléments circonstanciels.",
+  return [{ id: "p8", devoir: "Première", titre: "Devoir bilan du premier semestre (1LLCAL1, 2026-2027)",
+    sous: "Spécialité. Une fiche de révision, puis trois entraînements construits comme le devoir : analyse verbale, analyse nominale, actif et passif, compléments circonstanciels.",
     chapitres: [ficheRevision, e1, e2, e3] }];
 })();
