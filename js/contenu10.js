@@ -11,7 +11,7 @@
   function remplacer(id, titre, etape) {
     const c = TOUS.find(x => x.id === id), k = c ? c.etapes.findIndex(e => e.titre === titre) : -1;
     if (k < 0) { console.error("Étape introuvable : " + id + " / " + titre); return; }
-    c.etapes[k] = etape;
+    c.etapes[k] = typeof etape === "function" ? etape(c.etapes[k]) : etape;
   }
   const la = s => `<i class="la">${s}</i>`;
   const CODES_CAS = ["N", "V", "A", "G", "D", "B"];
@@ -205,4 +205,98 @@
     [V("amet", tp("amo"), "present a 3s subj"), V("amat", tp("amo"), "present a 3s ind"), V("legant", tp("lego"), "present a 3p subj"), V("legent", tp("lego"), "futur a 3p ind"),
      V("legam", tp("lego"), "futur a 1s ind; present a 1s subj", null, "Deux analyses sont possibles : seul le contexte tranche."), V("videamus", VIDEO, "present a 1p subj"),
      V("sit", SUMV, "present a 3s subj"), V("esset", SUMV, "imparfait a 3s subj"), V("caperent", tp("capio"), "imparfait a 3p subj"), V("amavisset", tp("amo"), "pqp a 3s subj")]));
+  /* ============================================================
+     DE LA FORME AU SENS : les exercices vont toujours du latin
+     vers le français (version), jamais du français vers le latin.
+     ============================================================ */
+  /* Quiz : la première réponse de chaque question est la bonne (l'ordre est mélangé à l'affichage). */
+  const quiz = (titre, intro, qs) => ({ t: "quiz", titre, intro, questions: qs.map(([q, choix, expl]) => ({ q, choix, bon: 0, expl })) });
+  /* Traduction courte à écrire en français : réponses acceptées séparées par "|". */
+  const trad = (titre, intro, items, expl) => ({ t: "saisie", titre, intro, expl, items: items.map(([q, r]) => ({ q, r: r.split("|") })) });
+  const ph = (lat, fr) => `Dans ${la(lat)}${fr ? ` (« ${fr} »)` : ""}, quel est le cas du mot en gras, et pourquoi ?`;
+
+  remplacer("c17", "Roma au bon cas", quiz("Reconnaître le cas de Roma",
+    `Rappel : ${la("Roma")} (nominatif, vocatif, ablatif), ${la("Romam")} (accusatif), ${la("Romae")} (génitif, datif). C'est la fonction dans la phrase qui tranche.`,
+    [[ph("<b>Roma</b> in Italia sita est.", "Rome est située en Italie."), ["Nominatif : c'est le sujet.", "Ablatif : c'est un complément circonstanciel.", "Vocatif : on s'adresse à Rome."], ""],
+     [ph("Multi peregrini <b>Romam</b> visere volunt.", "Beaucoup d'étrangers veulent visiter Rome."), ["Accusatif : c'est le COD.", "Nominatif : c'est le sujet.", "Génitif : c'est un complément du nom."], ""],
+     [ph("Fama <b>Romae</b> per orbem terrarum diffusa est.", "La renommée de Rome s'est répandue dans le monde entier."), ["Génitif : c'est le complément du nom fama.", "Datif : c'est un COI.", "Nominatif : c'est le sujet."], ""],
+     [ph("Dei <b>Romae</b> favent.", "Les dieux sont favorables à Rome."), ["Datif : c'est le COI.", "Génitif : c'est un complément du nom.", "Accusatif : c'est le COD."], `La même forme ${la("Romae")} est génitif dans la phrase précédente : seule la construction permet de choisir.`],
+     [ph("Poetae antiqui de <b>Roma</b> saepe canebant.", "Les poètes anciens chantaient souvent au sujet de Rome."), ["Ablatif : complément circonstanciel, après la préposition de.", "Nominatif : c'est le sujet.", "Vocatif : on s'adresse à Rome."], ""],
+     [ph("O <b>Roma</b>, urbs aeterna !", "Ô Rome, ville éternelle !"), ["Vocatif : c'est une apostrophe.", "Nominatif : c'est le sujet.", "Ablatif : c'est un complément circonstanciel."], ""]]));
+
+  remplacer("c2", "Compléter les phrases", quiz("Du cas au sens : choisir la traduction",
+    "Repère le cas de chaque nom avant de choisir : l'ordre des mots ne dit pas qui fait quoi.",
+    [[la("Silva magna est."), ["La forêt est grande.", "Les forêts sont grandes.", "Il est dans la grande forêt."], `${la("silva")} : nominatif singulier, sujet.`],
+     [la("Poeta fabulam narrat."), ["Le poète raconte une histoire.", "L'histoire raconte le poète.", "Les poètes racontent des histoires."], `${la("fabulam")} : accusatif singulier, COD.`],
+     [la("Terram agricola amat."), ["Le paysan aime la terre.", "La terre aime le paysan.", "Les paysans aiment la terre."], `${la("terram")} est à l'accusatif : c'est le COD, même placé en tête.`],
+     [la("Regina coronam portat."), ["La reine porte une couronne.", "La couronne porte la reine.", "Les reines portent des couronnes."], `${la("coronam")} : accusatif singulier, COD.`],
+     [la("Puellae epistulas magistrae dant."), ["Les jeunes filles donnent des lettres à la maîtresse.", "La maîtresse donne des lettres aux jeunes filles.", "Les jeunes filles donnent la lettre de la maîtresse."], `Le verbe est au pluriel : ${la("puellae")} est le sujet (nominatif pluriel), ${la("magistrae")} le COI (datif singulier).`]]));
+
+  remplacer("c3", "Compléter les phrases", quiz("Du cas au sens : choisir la traduction",
+    "Repère le cas et le nombre de chaque nom avant de choisir.",
+    [[la("Ager magnus est."), ["Le champ est grand.", "Les champs sont grands.", "Il est grand dans le champ."], `${la("ager")} : nominatif singulier, sujet.`],
+     [la("Magister pueros laudat."), ["Le maître loue les enfants.", "Les enfants louent le maître.", "Le maître loue l'enfant."], `${la("pueros")} : accusatif pluriel, COD.`],
+     [la("In oppido sunt multae viae."), ["Dans la place forte, il y a beaucoup de rues.", "Beaucoup de rues mènent vers la place forte.", "La place forte a une seule rue."], `${la("in")} + ablatif : le lieu où l'on est.`],
+     [la("Pericula belli magna sunt."), ["Les dangers de la guerre sont grands.", "Le danger de la guerre est grand.", "Les guerres sont de grands dangers."], `${la("pericula")} : nominatif pluriel neutre ; ${la("belli")} : génitif singulier, complément du nom.`]]));
+
+  remplacer("c6", "Après la préposition", quiz("Traduire un groupe prépositionnel", "La préposition et le cas qui la suit donnent le sens du complément.",
+    [[la("cum amico"), ["avec un ami", "sans ami", "contre un ami"], `${la("cum")} + ablatif : l'accompagnement.`],
+     [la("contra tyrannum"), ["contre le tyran", "pour le tyran", "avec le tyran"], `${la("contra")} + accusatif.`],
+     [la("sine amicis"), ["sans amis", "avec des amis", "chez des amis"], `${la("sine")} + ablatif.`],
+     [la("ex oppido"), ["hors de la place forte", "dans la place forte", "vers la place forte"], `${la("ex")} + ablatif : le lieu d'où l'on sort.`],
+     [la("propter iniuriam"), ["à cause de l'injustice", "sans injustice", "contre l'injustice"], `${la("propter")} + accusatif : la cause.`],
+     [la("pro populo"), ["pour le peuple", "contre le peuple", "à travers le peuple"], `${la("pro")} + ablatif.`],
+     [la("per silvam"), ["à travers la forêt", "hors de la forêt", "sans la forêt"], `${la("per")} + accusatif.`],
+     [la("in silvam"), ["dans la forêt (on y entre)", "dans la forêt (on y est)", "hors de la forêt"], `${la("in")} + accusatif : le lieu où l'on va ; ${la("in silva")}, à l'ablatif : le lieu où l'on est.`]]));
+
+  remplacer("c7", "Accorder bonus", quiz("Traduire un nom et son adjectif",
+    "L'adjectif a le même cas, le même genre et le même nombre que son nom, mais pas toujours la même terminaison.",
+    [[la("bonorum agrorum"), ["des bons champs (complément du nom)", "les bons champs (COD)", "aux bons champs (COI)"], "Génitif pluriel."],
+     [la("bonas reginas"), ["les bonnes reines (COD)", "des bonnes reines (complément du nom)", "la bonne reine (COD)"], "Accusatif pluriel féminin."],
+     [la("cum bono viro"), ["avec l'homme bon", "avec les hommes bons", "sans l'homme bon"], `Ablatif singulier après ${la("cum")}.`],
+     [la("bonum poetam"), ["le bon poète (COD)", "du bon poète (complément du nom)", "les bons poètes (COD)"], `${la("poeta")} est masculin : l'adjectif prend la terminaison masculine ${la("-um")}, le nom garde ${la("-am")}.`],
+     [la("boni agricolae"), ["les bons paysans (sujet)", "la bonne paysanne (sujet)", "le bon paysan (COD)"], `${la("agricola")} est masculin : nominatif pluriel, ${la("boni")}.`],
+     [la("bonum oppidum"), ["la bonne place forte (sujet ou COD)", "des bonnes places fortes", "à la bonne place forte"], "Neutre singulier : nominatif et accusatif sont identiques."]]));
+
+  remplacer("c23", "Former comparatifs et superlatifs", trad("Traduire comparatifs et superlatifs",
+    `Traduis chaque forme en français. Le comparatif se rend par « plus… », le superlatif par « très… » ou « le plus… ».`,
+    [[la("altior") + " (" + la("altus, a, um") + " : haut)", "plus haut|plus élevé"], [la("fortior") + " (" + la("fortis, e") + " : courageux)", "plus courageux|plus fort"],
+     [la("altissimus"), "très haut|le plus haut|très élevé|le plus élevé"], [la("pulcherrimus") + " (" + la("pulcher, chra, chrum") + " : beau)", "très beau|le plus beau"],
+     [la("melior") + " (" + la("bonus") + ")", "meilleur"], [la("optimus") + " (" + la("bonus") + ")", "très bon|le meilleur|excellent"],
+     [la("maximus") + " (" + la("magnus") + " : grand)", "très grand|le plus grand"], [la("pessimus") + " (" + la("malus") + " : mauvais)", "très mauvais|le pire|le plus mauvais"],
+     [la("minor") + " (" + la("parvus") + " : petit)", "plus petit|moindre"]]));
+
+  remplacer("c13", "Former le participe présent", trad("Traduire le participe présent",
+    "Quel que soit son cas, le participe présent se traduit par la forme française en « -ant ». Écris-la.",
+    [[la("navigans") + " (" + la("navigo, as, are") + " : naviguer)", "naviguant|en naviguant|qui navigue"], [la("venientem") + " (" + la("venio, is, ire") + " : venir)", "venant|en venant|qui vient"],
+     [la("monentes") + " (" + la("moneo, es, ere") + " : avertir)", "avertissant|en avertissant|qui avertissent"], [la("legentis") + " (" + la("lego, is, ere") + " : lire)", "lisant|en lisant|qui lit"],
+     [la("audientibus") + " (" + la("audio, is, ire") + " : entendre)", "entendant|en entendant|qui entendent|écoutant"], [la("capiens") + " (" + la("capio, is, ere") + " : prendre)", "prenant|en prenant|qui prend"]]));
+
+  remplacer("c13", "Former les participes sur le supin", trad("Traduire les participes formés sur le supin",
+    `Le participe parfait passif se traduit par un participe passé (« aimé ») ; le participe futur en ${la("-urus")} par « sur le point de… ».`,
+    [[la("raptus") + " (" + la("rapio, is, ere, rapui, raptum") + " : enlever)", "enlevé|ayant été enlevé"], [la("victus") + " (" + la("vinco, is, ere, vici, victum") + " : vaincre)", "vaincu|ayant été vaincu"],
+     [la("inventus") + " (" + la("invenio, is, ire, inveni, inventum") + " : trouver)", "trouvé|ayant été trouvé"], [la("superatus") + " (" + la("supero, as, are, avi, atum") + " : surmonter)", "surmonté|ayant été surmonté|vaincu"],
+     [la("lecturus") + " (" + la("lego, is, ere, legi, lectum") + " : lire)", "sur le point de lire|qui va lire|devant lire|qui lira"],
+     [la("venturus") + " (" + la("venio, is, ire, veni, ventum") + " : venir)", "sur le point de venir|qui va venir|devant venir|qui viendra"],
+     [la("laturus") + " (" + la("fero, fers, ferre, tuli, latum") + " : porter)", "sur le point de porter|qui va porter|devant porter|qui portera"]]));
+
+  remplacer("c14", "Former l'infinitif parfait", trad("Traduire les infinitifs",
+    `Infinitif présent (« aimer ») ou infinitif parfait en ${la("-isse")} (« avoir aimé ») ? Traduis chaque forme.`,
+    [[la("amavisse") + " (" + la("amo") + " : aimer)", "avoir aimé"], [la("amare"), "aimer"], [la("fuisse") + " (" + la("sum") + " : être)", "avoir été"],
+     [la("cepisse") + " (" + la("capio") + " : prendre)", "avoir pris"], [la("mansisse") + " (" + la("maneo") + " : rester)", "être resté|avoir demeuré|être demeuré"],
+     [la("fugisse") + " (" + la("fugio") + " : fuir)", "avoir fui"], [la("videre") + " (" + la("video") + " : voir)", "voir"], [la("vidisse"), "avoir vu"]]));
+
+  remplacer("c14", "Thème : du français au latin", old => ({ t: "version", titre: "Version : repérer l'infinitive",
+    intro: "Pour chaque phrase, repère le verbe principal, puis le sujet de l'infinitive (à l'accusatif) et l'infinitif. Traduis en ajoutant « que ».",
+    vocab: old.vocab, phrases: [
+      { la: "Scio iudicem audire.", fr: "Je sais que le juge écoute.", note: "Infinitif présent : action simultanée." },
+      { la: "Dicis reum fugisse.", fr: "Tu dis que l'accusé a fui.", note: "Infinitif parfait : action antérieure." },
+      { la: "Videmus leges iustas esse.", fr: "Nous voyons que les lois sont justes.", note: "L'attribut <i class=\"la\">iustas</i> est lui aussi à l'accusatif." },
+      { la: "Putant Ciceronem patriam servaturum esse.", fr: "Ils pensent que Cicéron sauvera la patrie.", note: "Infinitif futur : action postérieure." }] }));
+
+  remplacer("c26", "Former le gérondif", trad("Traduire le gérondif",
+    "Le gérondif est la déclinaison de l'infinitif. Traduis chaque groupe en français.",
+    [[la("ars scribendi") + " (" + la("ars, artis, f") + " : l'art ; " + la("scribo") + " : écrire)", "l'art d'écrire"], [la("ad pugnandum") + " (" + la("pugno") + " : combattre)", "pour combattre"],
+     [la("audiendo") + " (" + la("audio") + " : écouter)", "en écoutant|en entendant"], [la("cupidus legendi") + " (" + la("cupidus, a, um") + " : désireux ; " + la("lego") + " : lire)", "désireux de lire"],
+     [la("docendo") + " (" + la("doceo") + " : enseigner)", "en enseignant"], [la("ad capiendum") + " (" + la("capio") + " : prendre)", "pour prendre"]]));
 })();

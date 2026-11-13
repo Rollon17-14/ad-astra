@@ -12,14 +12,14 @@ const nomChap = c => c.borne ? (c.genre || "Tristes") + " " + c.borne : "Chapitr
 const chapDe = n => CHAPS.find(c => c.id === "c" + n);
 const CLE = "vialatina.v1";
 const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, quiz: 20, version: 25, guide: 30 };
-const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Formes à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
+const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
 const NIVEAUX = [[0, "Tiro (recrue)"], [150, "Discipulus (élève)"], [450, "Miles (soldat)"], [900, "Centurio (centurion)"], [1500, "Tribunus (tribun)"], [2200, "Consul"], [3000, "Imperator"]];
 const ROMAINS = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL"];
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const h = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/j/g, "i").replace(/[.,;!?]/g, "").replace(/\s+/g, " ").trim();
+const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’`]/g, "'").replace(/j/g, "i").replace(/[.,;!?«»]/g, "").replace(/\s+/g, " ").trim();
 const melanger = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const auHasard = a => a[Math.floor(Math.random() * a.length)];
 const jour = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -403,13 +403,13 @@ const A = { onglet: "decl", mode: "analyser", bons: 0, total: 0, mods: null, tem
 function vueAtelier() {
   const declDispo = [...new Set(NOMS_ATELIER.map(n => MODELES[n.mod].decl))];
   A.mods = A.mods || [1, 2]; A.temps = A.temps || ["present"];
-  if (A.onglet === "decl" && A.mode === "traduire") A.mode = "analyser";
-  app.innerHTML = `<h1 tabindex="-1">Atelier</h1><p class="muet">Un entraînement sans fin sur les déclinaisons et les conjugaisons des cours. Chaque bonne réponse rapporte 2 points.</p>
+  if (A.mode === "donner" || (A.onglet === "decl" && A.mode === "traduire")) A.mode = "analyser";
+  app.innerHTML = `<h1 tabindex="-1">Atelier</h1><p class="muet">Un entraînement sans fin pour reconnaître les formes des déclinaisons et des conjugaisons, comme au devoir. Chaque bonne réponse rapporte 2 points.</p>
 <div class="carte"><div class="seg" role="group" aria-label="Type d'entraînement">${[["decl", "Déclinaisons"], ["conj", "Conjugaisons"]].map(([k, n]) => `<button type="button" data-onglet="${k}" aria-pressed="${A.onglet === k}">${n}</button>`).join("")}</div>
 <p class="muet" style="margin:.8rem 0 .3rem">${A.onglet === "decl" ? "Déclinaisons à travailler" : "Temps à travailler"}</p>
 <div class="seg" id="portee">${A.onglet === "decl" ? declDispo.map(d => `<button type="button" data-p="${d}" aria-pressed="${A.mods.includes(d)}">${d}${d === 1 ? "re" : "e"}</button>`).join("") : Object.entries(TEMPS).map(([k, t]) => `<button type="button" data-p="${k}" aria-pressed="${A.temps.includes(k)}">${t.nom}</button>`).join("")}</div>
 <p class="muet" style="margin:.8rem 0 .3rem">Exercice</p>
-<div class="seg">${(A.onglet === "decl" ? [["analyser", "Reconnaître les cas"], ["donner", "Écrire la forme"]] : [["analyser", "Niveau 1 : reconnaître"], ["traduire", "Niveau 2 : reconnaître et traduire"], ["donner", "Écrire la forme"]]).map(([k, n]) => `<button type="button" data-mode="${k}" aria-pressed="${A.mode === k}">${n}</button>`).join("")}</div></div>
+<div class="seg">${(A.onglet === "decl" ? [["analyser", "Reconnaître les cas"]] : [["analyser", "Niveau 1 : reconnaître"], ["traduire", "Niveau 2 : reconnaître et traduire"]]).map(([k, n]) => `<button type="button" data-mode="${k}" aria-pressed="${A.mode === k}">${n}</button>`).join("")}</div></div>
 <div class="carte" id="zone" style="margin-top:1rem"></div><p class="score" id="score" style="margin-top:.8rem"></p>`;
   $$("[data-onglet]").forEach(b => b.onclick = () => { A.onglet = b.dataset.onglet; vueAtelier(); });
   $$("[data-mode]").forEach(b => b.onclick = () => { A.mode = b.dataset.mode; vueAtelier(); });
