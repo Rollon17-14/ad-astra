@@ -2,7 +2,7 @@
    AD ASTRA — moteur du site (navigation, étapes, progression, atelier, lexique, profil).
    Le contenu est dans contenu1.js … contenu4.js ; les formes latines dans formes.js.
    ============================================================ */
-const PARCOURS = [...(window.PARTIE1 || []), ...(window.PARTIE2 || []), ...(window.PARTIE3 || []), ...(window.PARTIE4 || []), ...(window.PARTIE_TRAD || []), ...(window.PARTIE5 || []), ...(window.PARTIE_TRISTES || [])];
+const PARCOURS = [...(window.PARTIE1 || []), ...(window.PARTIE2 || []), ...(window.PARTIE3 || []), ...(window.PARTIE4 || []), ...(window.PARTIE_TRAD || []), ...(window.PARTIE5 || []), ...(window.PARTIE_TRISTES || []), ...(window.PARTIE_BILAN || [])];
 const CHAPS = PARCOURS.flatMap(p => p.chapitres.map(c => (c.partie = p, c)));
 /* La numérotation suit l'ordre du parcours ; la progression, elle, est enregistrée par identifiant (c1, c2…). */
 { let n = 0; CHAPS.forEach(c => { if (!c.borne) c.num = ++n; }); }
@@ -11,8 +11,8 @@ const lab = c => c.borne || ROMAINS[c.num];
 const nomChap = c => c.borne ? (c.genre || "Tristes") + " " + c.borne : "Chapitre " + ROMAINS[c.num];
 const chapDe = n => CHAPS.find(c => c.id === "c" + n);
 const CLE = "vialatina.v1";
-const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, quiz: 20, version: 25, guide: 30 };
-const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
+const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, nominal: 20, quiz: 20, version: 25, guide: 30 };
+const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", nominal: "Analyse nominale", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
 const NIVEAUX = [[0, "Tiro (recrue)"], [150, "Discipulus (élève)"], [450, "Miles (soldat)"], [900, "Centurio (centurion)"], [1500, "Tribunus (tribun)"], [2200, "Consul"], [3000, "Imperator"]];
 const ROMAINS = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL"];
 
@@ -143,7 +143,7 @@ function vueEtape(c, i) {
 <h1 tabindex="-1">${h(e.titre || NOMS_ETAPES[e.t])}</h1>
 <div class="points" aria-hidden="true">${c.etapes.map((x, k) => `<a href="#${c.id}-${k + 1}" class="${k === i ? "ici" : fait(c, k) ? "fait" : ""}" tabindex="-1"></a>`).join("")}</div>
 <div class="carte" id="zone"></div><div id="apres"></div>`;
-  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
+  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, nominal: etapeNominal, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
 }
 const lienSuivant = (c, i) => i + 1 < c.etapes.length ? `#${c.id}-${i + 2}` : `#${c.id}-fin`;
 /* Bandeau de réussite : enregistre, affiche l'explication et le bouton « Étape suivante ». */
@@ -302,8 +302,8 @@ const normFr = s => {
 };
 const frOk = (val, liste) => !!String(val).trim() && [].concat(liste).map(normFr).includes(normFr(val));
 const choix = (cls, nom, opts) => `<label>${nom}<select class="${cls}"><option value="">…</option>${opts.map(([v, n]) => `<option value="${v}">${n}</option>`).join("")}</select></label>`;
-function champsVerbe(T, M, V, n2) {
-  return `<div class="rangee">${T.length > 1 ? choix("s-t", "Temps", T.map(t => [t, maj(TEMPS_N[t])])) : ""}${M.length > 1 ? choix("s-m", "Mode", M.map(m => [m, maj(MODES_N[m])])) : ""}${V ? choix("s-v", "Voix", [["a", "Active"], ["p", "Passive"]]) : ""}${choix("s-p", "Personne", PERS.map((x, k) => [k, x]))}${n2 ? `<label class="large">Traduction<input type="text" class="s-fr" autocomplete="off" autocapitalize="none" spellcheck="false"></label>` : ""}</div>`;
+function champsVerbe(T, M, V, n2, inf) {
+  return `<div class="rangee">${T.length > 1 ? choix("s-t", "Temps", T.map(t => [t, maj(TEMPS_N[t])])) : ""}${M.length > 1 ? choix("s-m", "Mode", M.map(m => [m, maj(MODES_N[m])])) : ""}${V ? choix("s-v", "Voix", [["a", "Active"], ["p", "Passive"]]) : ""}${choix("s-p", "Personne", PERS.map((x, k) => [k, x]))}${inf ? `<label>Infinitif<input type="text" class="s-inf" autocomplete="off" autocapitalize="none" spellcheck="false"></label>` : ""}${n2 ? `<label class="large">Traduction<input type="text" class="s-fr" autocomplete="off" autocapitalize="none" spellcheck="false"></label>` : ""}</div>`;
 }
 function lireVerbe(d, a, T, M, V) {
   const v = cls => { const s = $("." + cls, d); return s ? s.value : null; }, ch = { t: v("s-t"), m: v("s-m"), v: v("s-v"), p: v("s-p") };
@@ -312,17 +312,46 @@ function lireVerbe(d, a, T, M, V) {
 function etapeVerbe(z, c, i, e) {
   let essais = 0;
   const T = e.temps || ["present"], M = e.modes || ["ind"], V = e.voix !== false, n2 = e.niveau === 2;
-  z.innerHTML = enTete(e) + `<p class="muet">${n2 ? "Niveau 2 : analyse chaque forme, puis traduis-la en français." : "Niveau 1 : analyse chaque forme, comme au devoir."}</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.mot || ""}</span>${champsVerbe(T, M, V, n2)}<small></small></div>`).join("")}</div>
+  z.innerHTML = enTete(e) + `<p class="muet">${n2 ? "Niveau 2 : analyse chaque forme, puis traduis-la en français." : "Niveau 1 : analyse chaque forme, comme au devoir."}</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.mot || ""}</span>${champsVerbe(T, M, V, n2, !!e.infinitif)}<small></small></div>`).join("")}</div>
 <div class="actions"><button class="btn" type="button" id="valider">Valider</button></div><div id="ret"></div>`;
   $("#valider", z).onclick = () => {
     let faux = 0;
     $$(".analyse", z).forEach(d => {
       if (d.classList.contains("juste")) return;
-      const it = e.items[+d.dataset.k], okA = lireVerbe(d, it.a, T, M, V), okF = !n2 || frOk($(".s-fr", d).value, it.fr), ok = okA && okF;
-      const sol = `${it.a.map(libAnalyse).join(" ; ou ")}${n2 ? ` : « ${[].concat(it.fr)[0]} »` : ""}`;
+      const it = e.items[+d.dataset.k], okI = !e.infinitif || norm($(".s-inf", d).value) === norm(it.inf), okA = lireVerbe(d, it.a, T, M, V) && okI, okF = !n2 || frOk($(".s-fr", d).value, it.fr), ok = okA && okF;
+      const sol = `${it.a.map(libAnalyse).join(" ; ou ")}${e.infinitif ? ` (${it.inf})` : ""}${n2 ? ` : « ${[].concat(it.fr)[0]} »` : ""}`;
       d.classList.toggle("juste", ok); d.classList.toggle("faux", !ok);
       if (ok) { $$("select, input", d).forEach(x => x.disabled = true); $("small", d).innerHTML = maj(sol).replace(/\.$/, "") + "." + (it.expl ? " " + it.expl : ""); }
       else { faux++; $("small", d).textContent = (!okA && !okF ? "Analyse et traduction à revoir." : !okA ? "Analyse à revoir." : "Traduction à revoir.") + (essais >= 2 ? ` Réponse : ${sol.replace(/\.$/, "")}.` : ""); }
+    });
+    if (faux) { essais++; $("#ret", z).innerHTML = `<div class="retour non">${faux} forme(s) à revoir.</div>`; }
+    else { $("#valider", z).hidden = true; $("#ret", z).innerHTML = ""; succes(c, i, etoilesPour(essais), e.expl || ""); }
+  };
+}
+
+/* ---------- Analyse nominale et adjectivale : cas, nombre, genre et nominatif singulier ---------- */
+const GENRES = [["m", "Masculin"], ["f", "Féminin"], ["n", "Neutre"]];
+function etapeNominal(z, c, i, e) {
+  let essais = 0;
+  const champ = nom => `<label class="large">${nom}<input type="text" class="s-lem" autocomplete="off" autocapitalize="none" spellcheck="false"></label>`;
+  z.innerHTML = enTete(e) + `<p class="muet">Coche toutes les analyses possibles, indique le genre, puis écris le nominatif singulier (l'entrée du lexique).</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.adj ? "adjectif" : "nom"}</span>${it.adj
+    ? `<div class="genres">${GENRES.map(([g, n]) => `<div><span class="g-nom">${n}</span>${grilleCas(k + g)}</div>`).join("")}</div><div class="rangee">${champ("Nominatif masculin singulier")}</div>`
+    : `<div class="une-grille">${grilleCas(k)}</div><div class="rangee">${choix("s-g", "Genre", GENRES)}${champ("Nominatif singulier")}</div>`}<small></small></div>`).join("")}</div>
+<div class="actions"><button class="btn" type="button" id="valider">Valider</button></div><div id="ret"></div>`;
+  $$(".grille", z).forEach(brancherGrille);
+  const liste = b => b.map(nomCode).join(", ");
+  $("#valider", z).onclick = () => {
+    let faux = 0;
+    $$(".analyse", z).forEach(d => {
+      if (d.classList.contains("juste")) return;
+      const it = e.items[+d.dataset.k], k = d.dataset.k, okL = [].concat(it.lemme).map(norm).includes(norm($(".s-lem", d).value));
+      const okC = it.adj ? GENRES.every(([g]) => String(lireGrille($(`[data-grille="${k}${g}"]`, d))) === String([...(it.bons[g] || [])].sort()))
+        : String(lireGrille($(".grille", d))) === String([...it.bons].sort()) && $(".s-g", d).value === it.g;
+      const ok = okC && okL;
+      const sol = (it.adj ? GENRES.filter(([g]) => (it.bons[g] || []).length).map(([g, n]) => `${n.toLowerCase()} : ${liste(it.bons[g])}`).join(" ; ") : `${liste(it.bons)} ; ${GENRES.find(x => x[0] === it.g)[1].toLowerCase()}`) + ` (${it.entree || [].concat(it.lemme)[0]})`;
+      d.classList.toggle("juste", ok); d.classList.toggle("faux", !ok);
+      if (ok) { $$("button, select, input", d).forEach(x => x.disabled = true); $("small", d).innerHTML = maj(sol) + "." + (it.expl ? " " + it.expl : ""); }
+      else { faux++; $("small", d).textContent = [okC ? "" : it.adj ? "Cas à revoir (pense aux trois genres)." : "Cas ou genre à revoir.", okL ? "" : "Nominatif singulier à revoir."].filter(Boolean).join(" ") + (essais >= 2 ? ` Réponse : ${sol}.` : ""); }
     });
     if (faux) { essais++; $("#ret", z).innerHTML = `<div class="retour non">${faux} forme(s) à revoir.</div>`; }
     else { $("#valider", z).hidden = true; $("#ret", z).innerHTML = ""; succes(c, i, etoilesPour(essais), e.expl || ""); }

@@ -345,3 +345,12 @@ button.retirer:hover { border-color: var(--minium); color: var(--minium); }
 .verbe .rangee > label.large { flex: 1 1 100%; }
 .verbe select, .verbe input { width: 100%; }
 .analyse.verbe small { display: block; margin-top: .5rem; }
+
+/* Analyse nominale : une grille pour un nom, trois grilles (genres) pour un adjectif */
+.une-grille { max-width: 18rem; margin-bottom: .6rem; }
+.genres { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .8rem; margin-bottom: .6rem; }
+.genres .g-nom { display: block; font-weight: 700; font-size: .9rem; margin-bottom: .2rem; }
+.question u, .bloc-q u { text-decoration-thickness: 2px; text-underline-offset: 3px; }
+.lex-fiche { columns: 2 16rem; column-gap: 2rem; padding-left: 1.1rem; margin: .3rem 0 1rem; }
+.lex-fiche li { break-inside: avoid; margin-bottom: .15rem; }
+.analyse .mot:empty { display: none; }
