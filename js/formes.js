@@ -99,6 +99,29 @@ function tConj(temps, voix = "actif", verbes = Object.keys(VERBES), titre) {
 <thead><tr><th>Personne</th>${verbes.map(v => `<th><i class="la">${v}</i><br><small>${VERBES[v].fr}</small></th>`).join("")}</tr></thead><tbody>
 ${PERS.map((p, k) => `<tr><th>${p}</th>${cols.map(c => `<td class="la">${c[k][0]}<b class="des">${c[k][1]}</b></td>`).join("")}</tr>`).join("")}</tbody></table></div>`;
 }
+/* ---------- Traduction française des cinq verbes modèles (atelier, niveau 2) ---------- */
+const FR_V = {
+  amo:   { pres: ["aime", "aimes", "aime", "aimons", "aimez", "aiment"], ri: "aim", rf: "aimer", ps: ["aimai", "aimas", "aima", "aimâmes", "aimâtes", "aimèrent"], pp: "aimé" },
+  moneo: { pres: ["avertis", "avertis", "avertit", "avertissons", "avertissez", "avertissent"], ri: "avertiss", rf: "avertir", ps: ["avertis", "avertis", "avertit", "avertîmes", "avertîtes", "avertirent"], pp: "averti" },
+  lego:  { pres: ["lis", "lis", "lit", "lisons", "lisez", "lisent"], ri: "lis", rf: "lir", ps: ["lus", "lus", "lut", "lûmes", "lûtes", "lurent"], pp: "lu" },
+  capio: { pres: ["prends", "prends", "prend", "prenons", "prenez", "prennent"], ri: "pren", rf: "prendr", ps: ["pris", "pris", "prit", "prîmes", "prîtes", "prirent"], pp: "pris" },
+  audio: { pres: ["entends", "entends", "entend", "entendons", "entendez", "entendent"], ri: "entend", rf: "entendr", ps: ["entendis", "entendis", "entendit", "entendîmes", "entendîtes", "entendirent"], pp: "entendu" }
+};
+const FR_PRON = ["je", "tu", "il", "nous", "vous", "ils"];
+const FR_IMPF = ["ais", "ais", "ait", "ions", "iez", "aient"], FR_FUT = ["ai", "as", "a", "ons", "ez", "ont"];
+const FR_AVOIR = { present: ["ai", "as", "a", "avons", "avez", "ont"], imparfait: FR_IMPF.map(d => "av" + d), futur: FR_FUT.map(d => "aur" + d) };
+const FR_ETRE = { present: ["suis", "es", "est", "sommes", "êtes", "sont"], imparfait: FR_IMPF.map(d => "ét" + d), futur: FR_FUT.map(d => "ser" + d) };
+const frSujet = (p, reste) => (p === 0 && /^[aeiouéèêh]/i.test(reste) ? "j'" : FR_PRON[p] + " ") + reste;
+/* Renvoie les traductions acceptées (la première est celle qu'on affiche) */
+function traduireFr(verbe, temps, voix, p) {
+  const f = FR_V[verbe], pl = p > 2;
+  if (voix === "passif") return [frSujet(p, FR_ETRE[temps][p] + " " + f.pp + (pl && !/s$/.test(f.pp) ? "s" : ""))];
+  if (temps === "present") return [frSujet(p, f.pres[p])];
+  if (temps === "imparfait") return [frSujet(p, f.ri + FR_IMPF[p])];
+  if (temps === "futur") return [frSujet(p, f.rf + FR_FUT[p])];
+  if (temps === "parfait") return [frSujet(p, FR_AVOIR.present[p] + " " + f.pp), frSujet(p, f.ps[p])];
+  return [frSujet(p, FR_AVOIR[temps === "pqp" ? "imparfait" : "futur"][p] + " " + f.pp)];
+}
 const SUM = ["sum", "es", "est", "sumus", "estis", "sunt"];
 
 /* ---------- Noms pour l'atelier (modèle, radical, nominatif si besoin) ---------- */
@@ -123,4 +146,4 @@ const NOMS_ATELIER = [
   ["res", "di", null, "dies, diei, m", "le jour"], ["res", "r", null, "res, rei, f", "la chose"]
 ].map(a => ({ mod: a[0], rad: a[1], nomSg: a[2], la: a[3], fr: a[4] }));
 
-if (typeof module !== "undefined") module.exports = { CAS, CAS_ABR, MODELES, decliner, formesPlates, tDecl, tAdj, VERBES, TEMPS, PERS, conjuguer, tConj, NOMS_ATELIER, SUM };
+if (typeof module !== "undefined") module.exports = { CAS, CAS_ABR, MODELES, decliner, formesPlates, tDecl, tAdj, VERBES, TEMPS, PERS, conjuguer, tConj, NOMS_ATELIER, SUM, traduireFr };

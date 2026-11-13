@@ -11,8 +11,8 @@ const lab = c => c.borne || ROMAINS[c.num];
 const nomChap = c => c.borne ? (c.genre || "Tristes") + " " + c.borne : "Chapitre " + ROMAINS[c.num];
 const chapDe = n => CHAPS.find(c => c.id === "c" + n);
 const CLE = "vialatina.v1";
-const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, quiz: 20, version: 25, guide: 30 };
-const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Formes à écrire", tableau: "Tableau à compléter", analyse: "Analyse de formes", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
+const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, quiz: 20, version: 25, guide: 30 };
+const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Formes à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
 const NIVEAUX = [[0, "Tiro (recrue)"], [150, "Discipulus (élève)"], [450, "Miles (soldat)"], [900, "Centurio (centurion)"], [1500, "Tribunus (tribun)"], [2200, "Consul"], [3000, "Imperator"]];
 const ROMAINS = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL"];
 
@@ -143,7 +143,7 @@ function vueEtape(c, i) {
 <h1 tabindex="-1">${h(e.titre || NOMS_ETAPES[e.t])}</h1>
 <div class="points" aria-hidden="true">${c.etapes.map((x, k) => `<a href="#${c.id}-${k + 1}" class="${k === i ? "ici" : fait(c, k) ? "fait" : ""}" tabindex="-1"></a>`).join("")}</div>
 <div class="carte" id="zone"></div><div id="apres"></div>`;
-  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
+  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
 }
 const lienSuivant = (c, i) => i + 1 < c.etapes.length ? `#${c.id}-${i + 2}` : `#${c.id}-fin`;
 /* Bandeau de réussite : enregistre, affiche l'explication et le bouton « Étape suivante ». */
@@ -287,6 +287,48 @@ function etapeAnalyse(z, c, i, e) {
   };
 }
 
+/* ---------- Verbes : niveau 1 (reconnaître la forme), niveau 2 (reconnaître et traduire) ---------- */
+const TEMPS_N = { present: "présent", imparfait: "imparfait", futur: "futur", parfait: "parfait", pqp: "plus-que-parfait", futant: "futur antérieur" };
+const MODES_N = { ind: "indicatif", subj: "subjonctif", imp: "impératif" };
+const maj = s => s[0].toUpperCase() + s.slice(1);
+const libAnalyse = x => `${TEMPS_N[x.t]} ${x.m === "subj" ? "du subjonctif" : x.m === "imp" ? "de l'impératif" : "de l'indicatif"} ${x.v === "p" ? "passif" : "actif"}, ${PERS[x.p]}`;
+/* Comparaison souple d'une traduction française : accents, élision, il/elle, accord du participe */
+const normFr = s => {
+  s = String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[’`]/g, "'").replace(/[.,;!?«»"]/g, " ").replace(/\bj'\s*/g, "je ").replace(/\s+/g, " ").trim()
+    .replace(/^(elle|on) /, "il ").replace(/^elles /, "ils ");
+  const m = s.split(" ");
+  if (m.length >= 3) { let d = m[m.length - 1], a; do { a = d; d = d.replace(/(es|e|s)$/, ""); } while (d !== a && d.length > 1); m[m.length - 1] = d; }
+  return m.join(" ");
+};
+const frOk = (val, liste) => !!String(val).trim() && [].concat(liste).map(normFr).includes(normFr(val));
+const choix = (cls, nom, opts) => `<label>${nom}<select class="${cls}"><option value="">…</option>${opts.map(([v, n]) => `<option value="${v}">${n}</option>`).join("")}</select></label>`;
+function champsVerbe(T, M, V, n2) {
+  return `<div class="rangee">${T.length > 1 ? choix("s-t", "Temps", T.map(t => [t, maj(TEMPS_N[t])])) : ""}${M.length > 1 ? choix("s-m", "Mode", M.map(m => [m, maj(MODES_N[m])])) : ""}${V ? choix("s-v", "Voix", [["a", "Active"], ["p", "Passive"]]) : ""}${choix("s-p", "Personne", PERS.map((x, k) => [k, x]))}${n2 ? `<label class="large">Traduction<input type="text" class="s-fr" autocomplete="off" autocapitalize="none" spellcheck="false"></label>` : ""}</div>`;
+}
+function lireVerbe(d, a, T, M, V) {
+  const v = cls => { const s = $("." + cls, d); return s ? s.value : null; }, ch = { t: v("s-t"), m: v("s-m"), v: v("s-v"), p: v("s-p") };
+  return a.some(x => (T.length < 2 || x.t === ch.t) && (M.length < 2 || x.m === ch.m) && (!V || x.v === ch.v) && String(x.p) === ch.p);
+}
+function etapeVerbe(z, c, i, e) {
+  let essais = 0;
+  const T = e.temps || ["present"], M = e.modes || ["ind"], V = e.voix !== false, n2 = e.niveau === 2;
+  z.innerHTML = enTete(e) + `<p class="muet">${n2 ? "Niveau 2 : analyse chaque forme, puis traduis-la en français." : "Niveau 1 : analyse chaque forme, comme au devoir."}</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.mot || ""}</span>${champsVerbe(T, M, V, n2)}<small></small></div>`).join("")}</div>
+<div class="actions"><button class="btn" type="button" id="valider">Valider</button></div><div id="ret"></div>`;
+  $("#valider", z).onclick = () => {
+    let faux = 0;
+    $$(".analyse", z).forEach(d => {
+      if (d.classList.contains("juste")) return;
+      const it = e.items[+d.dataset.k], okA = lireVerbe(d, it.a, T, M, V), okF = !n2 || frOk($(".s-fr", d).value, it.fr), ok = okA && okF;
+      const sol = `${it.a.map(libAnalyse).join(" ; ou ")}${n2 ? ` : « ${[].concat(it.fr)[0]} »` : ""}`;
+      d.classList.toggle("juste", ok); d.classList.toggle("faux", !ok);
+      if (ok) { $$("select, input", d).forEach(x => x.disabled = true); $("small", d).innerHTML = maj(sol).replace(/\.$/, "") + "." + (it.expl ? " " + it.expl : ""); }
+      else { faux++; $("small", d).textContent = (!okA && !okF ? "Analyse et traduction à revoir." : !okA ? "Analyse à revoir." : "Traduction à revoir.") + (essais >= 2 ? ` Réponse : ${sol.replace(/\.$/, "")}.` : ""); }
+    });
+    if (faux) { essais++; $("#ret", z).innerHTML = `<div class="retour non">${faux} forme(s) à revoir.</div>`; }
+    else { $("#valider", z).hidden = true; $("#ret", z).innerHTML = ""; succes(c, i, etoilesPour(essais), e.expl || ""); }
+  };
+}
+
 function etapeVersion(z, c, i, e) {
   let reste = e.phrases.length, justes = 0;
   z.innerHTML = enTete(e) + `<p class="muet">Écris ta traduction, puis compare-la à la traduction proposée. C'est toi qui t'évalues : sois honnête, c'est ainsi qu'on progresse.</p>` +
@@ -357,16 +399,17 @@ function etapeGuide(z, c, i, e) {
 }
 
 /* ---------- Atelier : entraînement libre ---------- */
-const A = { onglet: "decl", mode: "donner", bons: 0, total: 0, mods: null, temps: null };
+const A = { onglet: "decl", mode: "analyser", bons: 0, total: 0, mods: null, temps: null };
 function vueAtelier() {
   const declDispo = [...new Set(NOMS_ATELIER.map(n => MODELES[n.mod].decl))];
   A.mods = A.mods || [1, 2]; A.temps = A.temps || ["present"];
+  if (A.onglet === "decl" && A.mode === "traduire") A.mode = "analyser";
   app.innerHTML = `<h1 tabindex="-1">Atelier</h1><p class="muet">Un entraînement sans fin sur les déclinaisons et les conjugaisons des cours. Chaque bonne réponse rapporte 2 points.</p>
 <div class="carte"><div class="seg" role="group" aria-label="Type d'entraînement">${[["decl", "Déclinaisons"], ["conj", "Conjugaisons"]].map(([k, n]) => `<button type="button" data-onglet="${k}" aria-pressed="${A.onglet === k}">${n}</button>`).join("")}</div>
 <p class="muet" style="margin:.8rem 0 .3rem">${A.onglet === "decl" ? "Déclinaisons à travailler" : "Temps à travailler"}</p>
 <div class="seg" id="portee">${A.onglet === "decl" ? declDispo.map(d => `<button type="button" data-p="${d}" aria-pressed="${A.mods.includes(d)}">${d}${d === 1 ? "re" : "e"}</button>`).join("") : Object.entries(TEMPS).map(([k, t]) => `<button type="button" data-p="${k}" aria-pressed="${A.temps.includes(k)}">${t.nom}</button>`).join("")}</div>
 <p class="muet" style="margin:.8rem 0 .3rem">Exercice</p>
-<div class="seg">${[["donner", "Écrire la forme"], ["analyser", "Analyser la forme"]].map(([k, n]) => `<button type="button" data-mode="${k}" aria-pressed="${A.mode === k}">${n}</button>`).join("")}</div></div>
+<div class="seg">${(A.onglet === "decl" ? [["analyser", "Reconnaître les cas"], ["donner", "Écrire la forme"]] : [["analyser", "Niveau 1 : reconnaître"], ["traduire", "Niveau 2 : reconnaître et traduire"], ["donner", "Écrire la forme"]]).map(([k, n]) => `<button type="button" data-mode="${k}" aria-pressed="${A.mode === k}">${n}</button>`).join("")}</div></div>
 <div class="carte" id="zone" style="margin-top:1rem"></div><p class="score" id="score" style="margin-top:.8rem"></p>`;
   $$("[data-onglet]").forEach(b => b.onclick = () => { A.onglet = b.dataset.onglet; vueAtelier(); });
   $$("[data-mode]").forEach(b => b.onclick = () => { A.mode = b.dataset.mode; vueAtelier(); });
@@ -407,12 +450,14 @@ function questionAtelier() {
     } else {
       /* toutes les analyses possibles de cette forme, tous temps confondus */
       const toutes = []; Object.keys(TEMPS).forEach(tt => TEMPS[tt].voix.forEach(vv => conjuguer(vb, tt, vv).forEach((x, pp) => { if (x.join("") === forme) toutes.push([tt, vv, pp]); })));
-      z.innerHTML = `<p class="consigne-atelier">Analyse cette forme.<span class="forme">${forme}</span><span class="muet"><i class="la">${VERBES[vb].tp}</i> : ${VERBES[vb].fr}</span></p>
-<div class="rangee"><label for="a-t">Temps<select id="a-t">${Object.entries(TEMPS).map(([k, x]) => `<option value="${k}">${x.nom}</option>`).join("")}</select></label><label for="a-v">Voix<select id="a-v"><option value="actif">Active</option><option value="passif">Passive</option></select></label><label for="a-p">Personne<select id="a-p">${PERS.map((x, k) => `<option value="${k}">${x}</option>`).join("")}</select></label><button class="btn" type="button" id="ok">Valider</button></div><div id="ret"></div>`;
+      const n2 = A.mode === "traduire", T = Object.keys(TEMPS);
+      const an = toutes.map(x => ({ t: x[0], m: "ind", v: x[1] === "passif" ? "p" : "a", p: x[2] })), frs = toutes.flatMap(x => traduireFr(vb, x[0], x[1], x[2]));
+      z.innerHTML = `<p class="consigne-atelier">${n2 ? "Analyse cette forme, puis traduis-la." : "Analyse cette forme."}<span class="forme">${forme}</span><span class="muet"><i class="la">${VERBES[vb].tp}</i> : ${VERBES[vb].fr}</span></p>
+<div class="verbe">${champsVerbe(T, ["ind"], true, n2)}</div><div class="actions"><button class="btn" type="button" id="ok">Valider</button></div><div id="ret"></div>`;
       $("#ok").onclick = () => {
-        const ch = [$("#a-t").value, $("#a-v").value, +$("#a-p").value], ok = toutes.some(x => String(x) === String(ch));
-        $$("select", z).forEach(s => s.disabled = true); $("#ok").remove();
-        $("#ret").innerHTML = `<div class="retour ${ok ? "ok" : "non"}">${ok ? "Recte !" : "Pas tout à fait."} <i class="la">${forme}</i> : ${toutes.map(x => `${TEMPS[x[0]].nom.toLowerCase()} ${x[1]}, ${PERS[x[2]]}`).join(" ; ou ")}.</div>`; pointAtelier(ok); suiteAtelier(z);
+        const okA = lireVerbe(z, an, T, ["ind"], true), okF = !n2 || frOk($(".s-fr", z).value, frs), ok = okA && okF;
+        $$("select, input", z).forEach(s => s.disabled = true); $("#ok").parentNode.remove();
+        $("#ret").innerHTML = `<div class="retour ${ok ? "ok" : "non"}">${ok ? "Recte !" : !okA && !okF ? "Analyse et traduction à revoir." : !okA ? "Analyse à revoir." : "Traduction à revoir."} <i class="la">${forme}</i> : ${toutes.map(x => `${TEMPS_N[x[0]]} ${x[1]}, ${PERS[x[2]]}${n2 ? ` (« ${traduireFr(vb, x[0], x[1], x[2])[0]} »)` : ""}`).join(" ; ou ")}.</div>`; pointAtelier(ok); suiteAtelier(z);
       };
     }
   }
