@@ -372,3 +372,28 @@ ol.vers li::marker { font-style: normal; font-size: .8rem; color: var(--encre2);
 ol.vers li:nth-child(even) { padding-left: 1.2rem; }
 .mots-liste th { font-style: italic; font-weight: 700; text-align: left; }
 .phrase .lat { line-height: 1.6; }
+
+/* Certification ELEX : sujets d'examen */
+.elex-niveaux { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+.elex-niveaux a { font-weight: 700; padding: .5rem .9rem; border: 2px solid var(--pourpre); border-radius: 999px; text-decoration: none; color: var(--pourpre); }
+.ex-texte { position: sticky; top: 0; z-index: 5; background: var(--carte); border: 2px solid var(--pourpre); border-radius: 12px; padding: .5rem .9rem; margin: .8rem 0 1rem; max-height: 46vh; overflow: auto; }
+.ex-texte summary { font-weight: 700; cursor: pointer; color: var(--pourpre); }
+.ex-lat ol { margin: .5rem 0; padding-left: 2.2rem; } .ex-lat li { font-style: italic; line-height: 1.6; } .ex-lat li::marker { font-style: normal; font-size: .8rem; color: var(--encre2); }
+.ex-lat p { margin: .4rem 0; } .ex-voc { font-size: .9rem; color: var(--encre2); border-top: 1px solid var(--trait); padding-top: .5rem; }
+.ex-barre { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; } #ex-temps { font-weight: 700; }
+.ex-sec { margin: 1.6rem 0 .6rem; border-bottom: 2px solid var(--pourpre); padding-bottom: .2rem; }
+.ex-q { border: 1px solid var(--trait); border-radius: 10px; padding: .6rem .8rem; margin: 0 0 .7rem; min-width: 0; }
+.ex-q legend { font-weight: 400; padding: 0 .3rem; float: left; width: 100%; margin-bottom: .4rem; } .ex-q legend b { color: var(--pourpre); }
+.ex-n { display: inline-block; min-width: 1.7rem; text-align: center; font-weight: 700; background: var(--encre); color: var(--marbre); border-radius: 6px; padding: 0 .3rem; margin-right: .3rem; font-size: .85rem; }
+.ex-ch { display: grid; gap: .3rem; clear: both; } .ex-ch label { display: flex; gap: .5rem; align-items: baseline; padding: .35rem .5rem; border-radius: 8px; cursor: pointer; }
+.ex-ch label:has(input:checked) { background: var(--trait); } .ex-ch label.bonne { outline: 2px solid var(--vert, #2e7d4f); }
+.grille-q { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .8rem; } .grille-q .ex-ch { display: flex; gap: .3rem; clear: none; } .grille-q small { flex-basis: 100%; }
+.grille-q .ex-ch label { border: 1px solid var(--trait); padding: .3rem .6rem; }
+.ex-q small { display: block; margin-top: .4rem; } .ex-q.juste { border-color: #2e7d4f; } .ex-q.faux { border-color: var(--minium); }
+.ex-bilan { border: 3px solid var(--trait); border-radius: 14px; padding: 1rem 1.2rem; margin-top: 1rem; text-align: center; }
+.ex-bilan.or { border-color: #C9A227; } .ex-bilan.argent { border-color: #8E9AAF; } .ex-bilan.bronze { border-color: #A8672F; }
+.ex-score { font-size: 2.4rem; font-weight: 800; margin: 0; } .ex-med { font-size: 1.2rem; font-weight: 700; margin: .2rem 0 .6rem; }
+@media (max-width: 700px) { nav.principal a { padding: .4rem .4rem; font-size: .86rem; } }
+@media (max-width: 370px) { nav.principal a { padding: .35rem .25rem; font-size: .78rem; } }
+.grille-q { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .3rem .8rem; padding: .4rem .7rem; margin-bottom: .4rem; }
+.grille-q small { grid-column: 1 / -1; margin: 0; } .grille-q small:empty { display: none; }

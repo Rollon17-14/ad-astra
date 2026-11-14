@@ -2,7 +2,7 @@
    AD ASTRA — moteur du site (navigation, étapes, progression, atelier, lexique, profil).
    Le contenu est dans contenu1.js … contenu4.js ; les formes latines dans formes.js.
    ============================================================ */
-const PARCOURS = [...(window.PARTIE1 || []), ...(window.PARTIE2 || []), ...(window.PARTIE3 || []), ...(window.PARTIE4 || []), ...(window.PARTIE_TRAD || []), ...(window.PARTIE5 || []), ...(window.PARTIE_TRISTES || []), ...(window.PARTIE_VOCAB || []), ...(window.PARTIE_BILAN || [])];
+const PARCOURS = [...(window.PARTIE1 || []), ...(window.PARTIE2 || []), ...(window.PARTIE3 || []), ...(window.PARTIE4 || []), ...(window.PARTIE_TRAD || []), ...(window.PARTIE5 || []), ...(window.PARTIE_TRISTES || []), ...(window.PARTIE_VOCAB || []), ...(window.PARTIE_BILAN || []), ...(window.PARTIE_ELEX || [])];
 const CHAPS = PARCOURS.flatMap(p => p.chapitres.map(c => (c.partie = p, c)));
 /* La numérotation suit l'ordre du parcours ; la progression, elle, est enregistrée par identifiant (c1, c2…). */
 { let n = 0; CHAPS.forEach(c => { if (!c.borne) c.num = ++n; }); }
@@ -10,10 +10,10 @@ const CHAPS = PARCOURS.flatMap(p => p.chapitres.map(c => (c.partie = p, c)));
 const lab = c => c.borne || ROMAINS[c.num];
 const nomChap = c => c.borne ? (c.genre || "Tristes") + " " + c.borne : "Chapitre " + ROMAINS[c.num];
 const chapDe = n => CHAPS.find(c => c.id === "c" + n);
-const PARCOURS_VUE = PARCOURS.filter(p => !p.devoir), CHAPS_VUE = CHAPS.filter(c => !c.partie.devoir);
+const PARCOURS_VUE = PARCOURS.filter(p => !p.devoir && !p.elex), CHAPS_VUE = CHAPS.filter(c => !c.partie.devoir && !c.partie.elex);
 const CLE = "vialatina.v1";
-const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, nominal: 20, mots: 15, quiz: 20, version: 25, guide: 30 };
-const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", nominal: "Analyse nominale", mots: "Vocabulaire", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
+const XP_BASE = { lecon: 5, qcm: 10, ordre: 15, tri: 15, saisie: 20, tableau: 20, analyse: 20, verbe: 20, nominal: 20, mots: 15, examen: 40, quiz: 20, version: 25, guide: 30 };
+const NOMS_ETAPES = { lecon: "Leçon", qcm: "Question", ordre: "Remise en ordre", tri: "Classement", saisie: "Réponses à écrire", tableau: "Tableau à compléter", analyse: "Reconnaissance des cas", verbe: "Analyse de verbes", nominal: "Analyse nominale", mots: "Vocabulaire", examen: "Sujet d'examen", quiz: "Questions", version: "Traduction", guide: "Traduction guidée" };
 const NIVEAUX = [[0, "Tiro (recrue)"], [150, "Discipulus (élève)"], [450, "Miles (soldat)"], [900, "Centurio (centurion)"], [1500, "Tribunus (tribun)"], [2200, "Consul"], [3000, "Imperator"]];
 const ROMAINS = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "XIII", "XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI", "XXII", "XXIII", "XXIV", "XXV", "XXVI", "XXVII", "XXVIII", "XXIX", "XXX", "XXXI", "XXXII", "XXXIII", "XXXIV", "XXXV", "XXXVI", "XXXVII", "XXXVIII", "XXXIX", "XL"];
 
@@ -112,7 +112,7 @@ function vueAccueil() {
   app.innerHTML = `<div class="accueil-tete"><p class="devise" lang="la">Per aspera ad astra</p><h1 tabindex="-1">Ad astra, le latin au lycée Antoine de Saint-Exupéry, La Rochelle</h1>
 <p>${CHAPS.filter(c => !c.borne).length} chapitres qui suivent le cours : des leçons courtes, puis des formes à reconnaître et à analyser, et des phrases à traduire. Chaque étape validée rapporte des points. En fin de parcours, les Terminales de spécialité traduisent le livre III des <em>Tristes</em> d'Ovide.</p></div>
 ${p ? `<div class="reprendre"><div><span class="muet">${debut ? "Pour commencer" : "Reprendre où tu en étais"}</span><strong>${nomChap(p.c)} : ${h(p.c.titre)}</strong><span class="muet">Étape ${p.i + 1} sur ${p.c.etapes.length}</span></div><div class="actions" style="margin:0"><a class="btn" href="#${p.c.id}-${p.i + 1}">${debut ? "Commencer" : "Continuer"}</a>${p.c.facultatif ? `<button class="btn discret" type="button" id="passer">Passer ce chapitre</button>` : ""}</div></div>` : `<div class="reprendre"><div><strong>Parcours terminé. Optime !</strong><span class="muet">Tu peux refaire les étapes pour gagner des étoiles, ou t'entraîner dans l'atelier.</span></div><a class="btn" href="#atelier">Ouvrir l'atelier</a></div>`}
-<p class="vers-devoirs"><a href="#devoirs">Devoirs et examens : les révisions par niveau</a></p>
+<p class="vers-devoirs"><a href="#devoirs">Devoirs et examens : les révisions par niveau</a> <a href="#elex">Certification européenne ELEX</a></p>
 <div class="aller"><label for="aller">Aller directement à un chapitre, pour réviser</label><select id="aller"><option value="">Choisir un chapitre…</option>${PARCOURS_VUE.map(pa => `<optgroup label="${h(pa.titre)}">${pa.chapitres.map(c => `<option value="${c.id}">${lab(c)}. ${h(c.titre)}${chapFini(c) ? " ✓" : ""}</option>`).join("")}</optgroup>`).join("")}</select></div>
 ${PARCOURS_VUE.map(pa => `<section><div class="partie"><h2>${h(pa.titre)}</h2><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol></section>`).join("")}`;
   const bp = $("#passer"); if (bp) bp.onclick = () => passerChapitre(p.c);
@@ -127,7 +127,7 @@ ${NIVEAUX_DEVOIRS.map(([niv, ancre]) => {
     return `<section class="niveau-devoirs" id="dv-${ancre}"><h2 class="niveau-titre">${niv}</h2>${parties.length ? parties.map(pa => `<div class="partie"><h3>${h(pa.titre)}</h3><p>${h(pa.sous)}</p></div><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol>`).join("") : `<p class="muet">Aucun devoir annoncé pour l'instant. Les révisions apparaîtront ici.</p>`}${niv === "Terminale" && window.PARTIE_TRISTES ? `<p class="vers-devoirs"><a href="#c28">Pour s'entraîner toute l'année : Traduisons le livre III des <em>Tristes</em> d'Ovide</a></p><p class="vers-devoirs"><a href="#c52">Apprendre le vocabulaire des <em>Tristes</em> : 300 mots à connaître</a></p>` : ""}</section>`;
   }).join("")}`;
 }
-const filDebut = c => c.partie.devoir ? `<a href="#devoirs">Devoirs et examens</a>` : `<a href="#parcours">Parcours</a>`;
+const filDebut = c => c.partie.elex ? `<a href="#elex">Certification ELEX</a>` : c.partie.devoir ? `<a href="#devoirs">Devoirs et examens</a>` : `<a href="#parcours">Parcours</a>`;
 function vueChapitre(c) {
   const n = nbFaits(c), suiv = c.etapes.findIndex((e, k) => !fait(c, k));
   app.innerHTML = `<p class="fil">${filDebut(c)} › ${h(c.partie.titre)}</p>
@@ -145,7 +145,7 @@ function vueFin(c) {
   app.innerHTML = `<div class="carte fin"><h1 tabindex="-1">${chapFini(c) ? nomChap(c) + " : terminé" : "Fin : " + nomChap(c)}</h1>
 <p>${chapFini(c) ? "Bene fecisti ! Toutes les étapes sont validées." : `Il reste ${c.etapes.length - et.length} étape(s) à valider dans ce chapitre.`}</p>
 <dl class="chiffres"><div><dt>Étapes validées</dt><dd>${et.length} / ${c.etapes.length}</dd></div><div><dt>Étoiles</dt><dd>${etoiles} / ${exos * 3}</dd></div><div><dt>Points au total</dt><dd>${S.xp}</dd></div></dl>
-<div class="actions">${suiv ? `<a class="btn" href="#${suiv.id}">Chapitre suivant : ${h(suiv.titre)}</a>` : `<a class="btn" href="#profil">Voir mon profil</a>`}<a class="btn second" href="#${c.id}">Revoir ce chapitre</a><a class="btn discret" href="${c.partie.devoir ? "#devoirs" : "#parcours"}">${c.partie.devoir ? "Retour aux devoirs" : "Retour au parcours"}</a></div></div>`;
+<div class="actions">${suiv ? `<a class="btn" href="#${suiv.id}">Chapitre suivant : ${h(suiv.titre)}</a>` : `<a class="btn" href="#profil">Voir mon profil</a>`}<a class="btn second" href="#${c.id}">Revoir ce chapitre</a><a class="btn discret" href="${c.partie.elex ? "#elex" : c.partie.devoir ? "#devoirs" : "#parcours"}">${c.partie.elex ? "Retour à la certification" : c.partie.devoir ? "Retour aux devoirs" : "Retour au parcours"}</a></div></div>`;
 }
 
 /* ---------- Étapes ---------- */
@@ -156,7 +156,7 @@ function vueEtape(c, i) {
 <h1 tabindex="-1">${h(e.titre || NOMS_ETAPES[e.t])}</h1>
 <div class="points" aria-hidden="true">${c.etapes.map((x, k) => `<a href="#${c.id}-${k + 1}" class="${k === i ? "ici" : fait(c, k) ? "fait" : ""}" tabindex="-1"></a>`).join("")}</div>
 <div class="carte" id="zone"></div><div id="apres"></div>`;
-  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, nominal: etapeNominal, mots: etapeMots, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
+  ({ lecon: etapeLecon, qcm: etapeQcm, tri: etapeTri, ordre: etapeOrdre, saisie: etapeSaisie, tableau: etapeTableau, analyse: etapeAnalyse, verbe: etapeVerbe, nominal: etapeNominal, mots: etapeMots, examen: etapeExamen, quiz: etapeQuiz, version: etapeVersion, guide: etapeGuide }[e.t])($("#zone"), c, i, e);
 }
 const lienSuivant = (c, i) => i + 1 < c.etapes.length ? `#${c.id}-${i + 2}` : `#${c.id}-fin`;
 /* Bandeau de réussite : enregistre, affiche l'explication et le bouton « Étape suivante ». */
@@ -374,7 +374,7 @@ function etapeNominal(z, c, i, e) {
 /* ---------- Vocabulaire : du mot latin à son sens, les mots manqués reviennent ---------- */
 function etapeMots(z, c, i, e) {
   const cle = m => m[1].split(/[,;(]/)[0].trim();
-  let file = melanger(e.mots), err = 0, faits = 0; const total = e.mots.length;
+  let file = e.tirage ? melanger(e.mots).slice(0, e.tirage) : melanger(e.mots), err = 0, faits = 0; const total = file.length;
   z.innerHTML = enTete(e) + `<p class="muet" id="m-av"></p><div id="m-q"></div>`;
   function suivant() {
     $("#m-av", z).textContent = `${faits} mot${faits > 1 ? "s" : ""} sur ${total}`;
@@ -390,6 +390,52 @@ function etapeMots(z, c, i, e) {
     });
   }
   suivant();
+}
+
+/* ---------- Certification ELEX : page d'accueil de la préparation ---------- */
+function vueElex() {
+  const parties = PARCOURS.filter(p => p.elex);
+  app.innerHTML = `<h1 tabindex="-1">Certification ELEX</h1><p class="muet">L'examen européen de latin d'Euroclassica : 40 questions à choix multiples sur un texte, en 45 minutes. Deux préparations distinctes, une par niveau.</p>
+<p class="elex-niveaux">${parties.map(p => `<a href="#el-${p.id}">${h(p.court || p.titre)}</a>`).join("")}</p>
+${parties.map(pa => `<section class="niveau-devoirs" id="el-${pa.id}"><h2 class="niveau-titre">${h(pa.titre)}</h2><p>${h(pa.sous)}</p><ol class="via">${pa.chapitres.map(borneHtml).join("")}</ol></section>`).join("")}`;
+  $$(".elex-niveaux a").forEach(a => a.onclick = ev => { ev.preventDefault(); const c = document.getElementById(a.getAttribute("href").slice(1)); if (c) c.scrollIntoView({ behavior: "smooth" }); });
+}
+
+/* ---------- Sujet d'examen : 40 questions, correction à la fin, médaille ---------- */
+function etapeExamen(z, c, i, e) {
+  const Q = e.sections.flatMap((s, k) => s.questions.map(q => Object.assign({ sec: k }, q))), L = "ABCD", n = Q.length;
+  const seuils = e.seuils || [36, 30, 24];
+  let rendu = false, chrono = null;
+  const bloc = (q, k) => e.grille
+    ? `<div class="ex-q grille-q" data-k="${k}"><span class="ex-n">${k + 1}</span><div class="ex-ch" role="radiogroup" aria-label="Question ${k + 1}">${[...L].map((l, j) => `<label><input type="radio" name="ex${k}" value="${j}"><span>${l}</span></label>`).join("")}</div><small></small></div>`
+    : `<fieldset class="ex-q" data-k="${k}"><legend><span class="ex-n">${k + 1}</span> ${q.q}</legend><div class="ex-ch">${q.choix.map((x, j) => `<label><input type="radio" name="ex${k}" value="${j}"><span><b>${L[j]}.</b> ${x}</span></label>`).join("")}</div><small></small></fieldset>`;
+  let k = 0;
+  z.innerHTML = enTete(e) + `${e.texte ? `<details class="ex-texte" open><summary>Texte${e.voc ? " et vocabulaire" : ""}</summary><div class="ex-lat">${e.texte}</div>${e.voc ? `<p class="ex-voc"><b>Vocabulaire.</b> ${e.voc}</p>` : ""}</details>` : ""}
+<p class="ex-barre"><button class="btn second" type="button" id="ex-chrono">Lancer le chrono (${e.duree || 45} min)</button> <span id="ex-temps" aria-live="off"></span></p>
+${e.sections.map(s => `<h3 class="ex-sec">${s.titre}</h3>${s.questions.map(() => bloc(Q[k], k++)).join("")}`).join("")}
+<div class="actions"><button class="btn" type="button" id="ex-rendre">Rendre ma copie</button></div><div id="ret"></div>`;
+  $("#ex-chrono", z).onclick = () => {
+    if (chrono) return; const fin = Date.now() + (e.duree || 45) * 60000; $("#ex-chrono", z).hidden = true;
+    const maj2 = () => { const r = Math.max(0, fin - Date.now()), m = Math.floor(r / 60000), s2 = Math.floor(r % 60000 / 1000); const el = $("#ex-temps", z); if (!el) { clearInterval(chrono); return; } el.textContent = r ? `Temps restant : ${m} min ${String(s2).padStart(2, "0")}` : "Temps écoulé : rends ta copie."; if (!r || rendu) clearInterval(chrono); };
+    maj2(); chrono = setInterval(maj2, 1000);
+  };
+  let averti = false;
+  $("#ex-rendre", z).onclick = () => {
+    const rep = Q.map((q, k2) => { const r = z.querySelector(`input[name="ex${k2}"]:checked`); return r ? +r.value : -1; }), vides = rep.filter(r => r < 0).length;
+    if (vides && !averti) { averti = true; $("#ret", z).innerHTML = `<div class="retour non">${vides} question(s) sans réponse. Complète-les, ou appuie de nouveau sur « Rendre ma copie ».</div>`; return; }
+    rendu = true; let score = 0; const parSec = e.sections.map(() => 0);
+    Q.forEach((q, k2) => {
+      const d = z.querySelector(`.ex-q[data-k="${k2}"]`), ok = rep[k2] === q.bon; if (ok) { score++; parSec[q.sec]++; }
+      d.classList.add(ok ? "juste" : "faux"); $$("input", d).forEach(x => x.disabled = true);
+      const lab2 = $$("label", d)[q.bon]; if (lab2) lab2.classList.add("bonne");
+      $("small", d).innerHTML = `${ok ? "" : `Réponse : <b>${L[q.bon]}</b>${e.grille && q.r ? " (" + q.r + ")" : ""}. `}${q.expl || ""}`;
+    });
+    const med = score >= seuils[0] ? ["or", "Médaille d'or", 3] : score >= seuils[1] ? ["argent", "Médaille d'argent", 2] : score >= seuils[2] ? ["bronze", "Médaille de bronze", 1] : ["", "Pas encore de médaille : il en faut " + seuils[2], 0];
+    $("#ex-rendre", z).hidden = true; $(".ex-barre", z).hidden = true;
+    $("#ret", z).innerHTML = `<div class="ex-bilan ${med[0]}"><p class="ex-score">${score} / ${n}</p><p class="ex-med">${med[1]}</p><p>${e.sections.map((s, j) => `${s.titre.replace(/^[IVX]+\. /, "")} : <b>${parSec[j]} / ${s.questions.length}</b>`).join(" · ")}</p><p class="muet">Remonte dans la copie : chaque question est corrigée.</p>${med[2] ? "" : `<div class="actions"><button class="btn second" type="button" id="ex-refaire">Recommencer</button></div>`}</div>`;
+    if (med[2]) succes(c, i, med[2], ""); else $("#ex-refaire", z).onclick = () => etapeExamen(z, c, i, e);
+    $("#ret", z).scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 }
 
 function etapeVersion(z, c, i, e) {
@@ -644,11 +690,12 @@ const o_a = (o, c) => /[1-3]/.test(o.f[c.id] || "");
 function route() {
   const r = location.hash.replace(/^#\/?/, "") || "parcours";
   const m = r.match(/^(c\d+)(?:-(\d+|fin))?$/), c = m && CHAPS.find(x => x.id === m[1]);
-  let onglet = c && c.partie.devoir ? "devoirs" : "parcours";
+  let onglet = c && c.partie.elex ? "elex" : c && c.partie.devoir ? "devoirs" : "parcours";
   if (c && m[2] === "fin") vueFin(c);
   else if (c && m[2] && c.etapes[+m[2] - 1]) vueEtape(c, +m[2] - 1);
   else if (c) vueChapitre(c);
   else if (r === "devoirs") { onglet = r; vueDevoirs(); }
+  else if (r === "elex") { onglet = r; vueElex(); }
   else if (r === "atelier") { onglet = r; vueAtelier(); }
   else if (r === "lexique") { onglet = r; vueLexique(); }
   else if (r === "profil") { onglet = r; vueProfil(); }
