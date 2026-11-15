@@ -7,7 +7,7 @@
    `chapitre` : chapitre du site avec la traduction guidée.
    ============================================================ */
 var TEXTES_TRISTES = [
-  { id: "III-1", ref: "III, 1", titre: "Le livre à Rome", chapitre: "c29", revision: "https://claude.ai/artifact/Vvt23SAEuscTK5utqTeFU6",
+  { id: "III-1", ref: "III, 1", titre: "Le livre à Rome", chapitre: "c29",
     chapo: "Le livre lui-même prend la parole : envoyé de Tomes, il arrive à Rome et cherche où se poser.",
     vers: `« Missus in hanc uenio timide liber exulis urbem :
 Da placidam fesso, lector amice, manum
@@ -92,7 +92,7 @@ Priuato liceat delituisse loco.
 Vos quoque, si fas est, confusa pudore repulsae
 Sumite, plebeiae, carmina nostra, manus.` },
 
-  { id: "III-9", ref: "III, 9", titre: "La ville de Tomes", chapitre: "c37", revision: "https://claude.ai/artifact/QntVsVBGX7VgZ25ChxdT4z", version: "c47",
+  { id: "III-9", ref: "III, 9", titre: "La ville de Tomes", chapitre: "c37", version: "c47",
     chapo: "Pourquoi une ville grecque au bout du monde, et d'où vient son nom : le crime de Médée.",
     vers: `Hic quoque sunt igitur Graiae — quis crederet ? — urbes
 Inter inhumanae nomina barbariae ;
@@ -129,7 +129,7 @@ Dum legit extinctos, triste moretur iter.
 Inde Tomis dictus locus hic, quia fertur in illo
 Membra soror fratris consecuisse sui.` },
 
-  { id: "III-10", ref: "III, 10", titre: "Le froid de Tomes", chapitre: "c38", revision: "https://claude.ai/artifact/HqVMEA31TfWiEBZmxTnkk3",
+  { id: "III-10", ref: "III, 10", titre: "Le froid de Tomes", chapitre: "c38",
     chapo: "L'hiver scythe : la neige, le vin gelé, le Danube pris par la glace, puis les raids des cavaliers barbares.",
     vers: `Si quis adhuc istic meminit Nasonis adempti
 Et superest sine me nomen in Vrbe meum,

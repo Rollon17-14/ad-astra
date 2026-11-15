@@ -690,7 +690,7 @@ const o_a = (o, c) => /[1-3]/.test(o.f[c.id] || "");
 const REVISIONS_TRISTES = [
   { titre: "Ovide et Karen Blixen : le cours d'introduction", sous: "Séquence 1 : partir, arriver en terre étrangère. Contexte, vie d'Ovide, Blixen, défi final.", page: "revisions/introduction.html", original: "https://claude.ai/artifact/QhRLzUx4o8BnSnT2wjBhrk" }
 ];
-const SOUS_TRISTES = [["accueil", "Vue d'ensemble"], ["revisions", "Réviser le cours"], ["lire", "Lire les textes"]];
+const SOUS_TRISTES = [["accueil", "Vue d'ensemble"], ["revisions", "Cours"], ["lire", "Lire"], ["juxta", "Juxtas"], ["exercices", "Exercices"]];
 function ongletsTristes(actif) {
   return `<nav class="sous-onglets" aria-label="Les Tristes">${SOUS_TRISTES.map(([k, n]) => `<a href="#tristes${k === "accueil" ? "" : "/" + k}"${k === actif ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>`;
 }
@@ -716,14 +716,192 @@ function brancherJuxta() {
   $$(".jx-fr", j).forEach(td => { const f = () => td.classList.toggle("vu"); td.onclick = f; td.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }; });
   $("#jx-imp").onclick = () => window.print();
 }
+/* ---------- Exercices par élégie (appariement, trous, retraduction, structures, morphologie, mots, question finale) ---------- */
+const EX_ONGLETS = [["app", "Appariement"], ["trous", "Trous"], ["retrad", "Retraduction"], ["struct", "Structures"], ["morpho", "Morphologie"], ["mots", "Mots"], ["fin", "Question finale"]];
+const EXS = {};
+const mixEx = (opts, bon) => melanger(opts.map((t, i) => ({ t, c: i === bon })));
+const luV = x => String(norm(x)).replace(/v/g, "u");
+function donneesElegie(t) {
+  const vers = t.vers.split("\n"), fr = vers.map(() => []); let cur = 0;
+  juxtaLignes(t).forEach(x => { if (x.n) cur = x.n; if (cur) fr[cur - 1].push(x.fr); });
+  return { vers, fr: fr.map(a => a.join(" ").replace(/\s+/g, " ").trim()) };
+}
+function vueExosElegies(id) {
+  const t = TEXTES_TRISTES.find(x => x.id === id && EXOS_TRISTES[x.id]);
+  if (!t) {
+    app.innerHTML = `<h1 tabindex="-1">Les Tristes : exercices</h1>${ongletsTristes("exercices")}<p class="muet">Pour chaque élégie : relier le latin à sa traduction, compléter le texte, retraduire de mémoire, repérer les structures et les formes, apprendre les mots.</p>
+<ul class="tr-textes">${TEXTES_TRISTES.filter(x => EXOS_TRISTES[x.id]).map(x => `<li><a href="#tristes/exercices/${x.id}"><span class="borne" aria-hidden="true">${h(x.ref)}</span><span class="borne-txt"><strong>${h(x.titre)}</strong><span>${h(x.chapo)}</span><span>7 séries d'exercices</span></span></a></li>`).join("")}</ul>`;
+    return;
+  }
+  const D = donneesElegie(t), X = EXOS_TRISTES[t.id];
+  const nd = Math.ceil(D.vers.length / 2);
+  const E = EXS[id] || (EXS[id] = { tab: "app", a: { b: 0, sel: null, pairs: {}, chk: {}, ordre: {} }, tr: { b: 0, m: {} }, rt: { b: 0, s: 0, txt: {}, crit: {} }, s4: null, s5: null, mt: null, fin: { fait: false } });
+  const blocsApp = []; for (let d = 0; d < nd; d += 6) blocsApp.push(Array.from({ length: Math.min(6, nd - d) }, (_, k) => d + k));
+  const blocsTr = []; for (let v = 0; v < D.vers.length; v += 4) blocsTr.push([v, Math.min(v + 4, D.vers.length)]);
+  const blocsRt = []; for (let v = 0; v < D.vers.length; v += 6) blocsRt.push([v, Math.min(v + 6, D.vers.length)]);
+  const dist = d => ({ la: [D.vers[2 * d], D.vers[2 * d + 1]].filter(Boolean), fr: [D.fr[2 * d], D.fr[2 * d + 1]].filter(Boolean).join(" ") });
+  const rendre = () => {
+    const corps = $("#ex-corps"); if (!corps) return;
+    document.querySelectorAll(".ex-onglet").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === E.tab ? "true" : "false"));
+    ({ app: rApp, trous: rTrous, retrad: rRetrad, struct: rStruct, morpho: rMorpho, mots: rMots, fin: rFin })[E.tab](corps);
+  };
+  /* Appariement */
+  function rApp(c) {
+    const A = E.a, ids = blocsApp[A.b], P = A.pairs[A.b] || (A.pairs[A.b] = {}), chk = !!A.chk[A.b];
+    const ordre = A.ordre[A.b] || (A.ordre[A.b] = melanger(ids));
+    const lettre = d => String.fromCharCode(65 + ids.indexOf(d));
+    const frVers = {}; Object.keys(P).forEach(k => { frVers[P[k]] = +k; });
+    const L = ids.map(d => { let cl = "ex-seg la"; if (A.sel === d) cl += " sel"; if (d in P) cl += " lie"; if (chk && d in P) cl += P[d] === d ? " ok" : " non"; if (chk && !(d in P)) cl += " non"; return `<button type="button" class="${cl}" data-ex="a-la" data-d="${d}"><span class="tag">${lettre(d)}</span>${dist(d).la.map(h).join("<br>")}</button>`; }).join("");
+    const R = ordre.map(d => { let cl = "ex-seg"; const u = d in frVers; if (u) cl += " lie"; if (chk && u) cl += frVers[d] === d ? " ok" : " non"; return `<button type="button" class="${cl}" data-ex="a-fr" data-d="${d}"><span class="tag">${u ? lettre(frVers[d]) : "·"}</span>${h(dist(d).fr)}</button>`; }).join("");
+    const n = ids.filter(d => P[d] === d).length;
+    c.innerHTML = `<p class="muet">Clique sur un groupe latin, puis sur la traduction qui lui correspond. Un nouveau clic sur un groupe déjà associé défait le lien.</p>
+<div class="ex-pilules">${blocsApp.map((b, i) => `<button type="button" class="ex-pilule" data-ex="a-bloc" data-b="${i}" aria-pressed="${i === A.b}">Vers ${2 * b[0] + 1}-${Math.min(2 * b[b.length - 1] + 2, D.vers.length)}</button>`).join("")}</div>
+<div class="ex-deux"><div><span class="ex-leg">Latin</span>${L}</div><div><span class="ex-leg">Français (dans le désordre)</span>${R}</div></div>
+<p class="${chk ? "ex-score" : "muet"}">${chk ? `${n} / ${ids.length} associations justes` : `${Object.keys(P).length} / ${ids.length} associés`}</p>
+<div class="actions"><button class="btn" type="button" data-ex="a-chk">Vérifier</button>${chk ? `<button class="btn second" type="button" data-ex="a-fix">Corriger mes erreurs</button>` : ""}<button class="btn second" type="button" data-ex="a-sol">Voir la solution</button><button class="btn discret" type="button" data-ex="a-raz">Recommencer ce bloc</button></div>`;
+  }
+  /* Trous : un mot du latin par vers, la traduction est donnée */
+  function trouDe(v) {
+    const mots = v.split(" "); let best = -1, bl = 0;
+    mots.forEach((m, i) => { const core = m.replace(/[^A-Za-zœæ]/g, ""); if (core.length > bl && core.length >= 5) { bl = core.length; best = i; } });
+    return best;
+  }
+  function rTrous(c) {
+    const T = E.tr, [a, b] = blocsTr[T.b];
+    const ligne = k => { const v = D.vers[k], i = trouDe(v); if (i < 0) return h(v); const mots = v.split(" ");
+      return mots.map((m, j) => { if (j !== i) return h(m); const core = m.replace(/[^A-Za-zœæ]/g, ""), av = m.slice(0, m.indexOf(core)), ap = m.slice(m.indexOf(core) + core.length); return `${h(av)}<input class="ex-trou" type="text" data-rep="${h(core)}" style="width:${core.length + 3}ch" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="Mot à compléter">${h(ap)}`; }).join(" "); };
+    c.innerHTML = `<p class="muet">Un mot manque dans chaque vers. La traduction est donnée dessous. Les accents et la distinction u/v ne comptent pas comme des fautes.</p>
+<div class="ex-pilules">${blocsTr.map((x, i) => `<button type="button" class="ex-pilule" data-ex="t-bloc" data-b="${i}" aria-pressed="${i === T.b}">Vers ${x[0] + 1}-${x[1]}</button>`).join("")}</div>
+<div class="ex-carte"><p class="ex-lat" lang="la">${Array.from({ length: b - a }, (_, k) => ligne(a + k)).join("<br>")}</p></div>
+<div class="ex-carte"><span class="ex-leg">Traduction</span><p>${h(D.fr.slice(a, b).join(" "))}</p></div>
+<div class="actions"><button class="btn" type="button" data-ex="t-chk">Vérifier</button><button class="btn second" type="button" data-ex="t-sol">Voir les réponses</button><button class="btn discret" type="button" data-ex="t-raz">Effacer</button></div><div id="ex-fb"></div>`;
+  }
+  /* Retraduction en trois passes */
+  const CRIT = ["J'ai identifié le sujet de chaque verbe conjugué.", "J'ai respecté les temps et les modes (présent, parfait, subjonctif).", "J'ai rendu les connecteurs (ut, cum, dum, quamuis, ne, si…).", "J'ai traduit chaque mot du passage."];
+  function rRetrad(c) {
+    const R = E.rt, [a, b] = blocsRt[R.b], lat = D.vers.slice(a, b), fr = D.fr.slice(a, b).join(" ");
+    const cr = R.crit[R.b] || (R.crit[R.b] = [false, false, false, false]);
+    const carteLa = `<div class="ex-carte"><span class="ex-leg">Latin</span><p class="ex-lat" lang="la">${lat.map(h).join("<br>")}</p></div>`;
+    let corps;
+    if (R.s === 0) corps = `<div class="ex-deux">${carteLa}<div class="ex-carte"><span class="ex-leg">Français</span><p>${h(fr)}</p></div></div><div class="actions"><button class="btn" type="button" data-ex="r-go" data-s="1">Passe 2 : traduire sans le français</button></div>`;
+    else if (R.s === 1) corps = `${carteLa}<label class="ex-leg" for="r-txt">Ma traduction</label><textarea id="r-txt" class="ex-zone" placeholder="Écris ta traduction ici">${h(R.txt[R.b] || "")}</textarea><div class="actions"><button class="btn second" type="button" data-ex="r-go" data-s="0">Revoir le texte</button><button class="btn" type="button" data-ex="r-go" data-s="2">Passe 3 : comparer</button></div>`;
+    else { const n = cr.filter(Boolean).length;
+      corps = `<div class="ex-deux"><div class="ex-carte"><span class="ex-leg">Ma traduction</span><p style="white-space:pre-wrap">${(R.txt[R.b] || "").trim() ? h(R.txt[R.b]) : `<span class="muet">Tu n'as rien écrit en passe 2.</span>`}</p></div><div class="ex-carte"><span class="ex-leg">Traduction du site</span><p>${h(fr)}</p></div></div>
+<fieldset class="ex-crit"><legend>Mon auto-évaluation</legend>${CRIT.map((x, i) => `<label class="ex-opt"><input type="checkbox" data-ex="r-crit" data-i="${i}" ${cr[i] ? "checked" : ""}><span>${h(x)}</span></label>`).join("")}</fieldset>
+<div class="retour ${n === 4 ? "ok" : "non"}">${n} / 4. ${n === 4 ? "Retraduction maîtrisée : passe au passage suivant, ou recommence celui-ci un autre jour." : "Retourne au latin pour les points non cochés."}</div><div class="actions"><button class="btn second" type="button" data-ex="r-go" data-s="1">Refaire la passe 2</button></div>`; }
+    c.innerHTML = `<p class="muet">Passe 1 : lis le latin avec le français. Passe 2 : le français disparaît, traduis par écrit. Passe 3 : compare et note-toi honnêtement. La traduction du site est littérale ; la tienne peut différer tout en étant juste.</p>
+<div class="ex-pilules">${blocsRt.map((x, i) => `<button type="button" class="ex-pilule" data-ex="r-bloc" data-b="${i}" aria-pressed="${i === R.b}">Vers ${x[0] + 1}-${x[1]}</button>`).join("")}</div><p class="muet">Passe ${R.s + 1} sur 3 : ${["lire", "traduire", "comparer"][R.s]}</p>${corps}`;
+  }
+  /* Structures */
+  function rStruct(c) {
+    if (!E.s4) E.s4 = { q: X.q4.map(q => ({ n: mixEx(q[2], 0), t: mixEx(q[3], 0) })), r: X.q4.map(() => null) };
+    const S = E.s4, k = S.r.filter(x => x !== null).length, ok = S.r.filter(x => x === true).length;
+    const radio = (g, arr, i) => arr.map((o, j) => `<label class="ex-opt"><input type="radio" name="${g}${i}" value="${j}"><span>${h(o.t)}</span></label>`).join("");
+    c.innerHTML = `<p class="muet">Pour chaque tournure en surbrillance, choisis sa nature et sa traduction, puis vérifie.</p><p class="ex-score">${k ? `${ok} / ${X.q4.length} tournures maîtrisées (${k} corrigées)` : ""}</p>
+${X.q4.map((q, i) => `<article class="ex-carte" data-i="${i}"><span class="ex-leg">${h(q[0])}</span><p class="ex-lat" lang="la">${q[1]}</p>
+<fieldset><legend>Nature de la tournure</legend>${radio("n", S.q[i].n, i)}</fieldset><fieldset><legend>Traduction</legend>${radio("t", S.q[i].t, i)}</fieldset>
+<div class="actions"><button class="btn" type="button" data-ex="s-chk" data-i="${i}">Vérifier</button></div><div class="ex-fbx"></div></article>`).join("")}
+<div class="actions"><button class="btn second" type="button" data-ex="s-raz">Recommencer</button></div>`;
+    S.r.forEach((r, i) => { if (r !== null) { const card = c.querySelector(`article[data-i="${i}"]`); corrigerStruct(card, i, true); } });
+  }
+  function corrigerStruct(card, i, silence) {
+    const S = E.s4, fb = card.querySelector(".ex-fbx");
+    const n = card.querySelector(`input[name="n${i}"]:checked`), m = card.querySelector(`input[name="t${i}"]:checked`);
+    if (!silence && (!n || !m)) { fb.innerHTML = `<div class="retour non">Réponds aux deux questions avant de vérifier.</div>`; return; }
+    const oN = S.q[i].n[n ? +n.value : 0].c, oT = S.q[i].t[m ? +m.value : 0].c;
+    if (!silence) S.r[i] = oN && oT;
+    ["n", "t"].forEach(g => card.querySelectorAll(`input[name="${g}${i}"]`).forEach(inp => { const c2 = S.q[i][g][+inp.value].c; inp.closest(".ex-opt").classList.toggle("ok", c2); inp.closest(".ex-opt").classList.toggle("non", inp.checked && !c2); inp.disabled = true; }));
+    fb.innerHTML = `<div class="retour ${S.r[i] ? "ok" : "non"}"><strong>${S.r[i] ? "Juste." : "À revoir."}</strong> ${h(X.q4[i][4])}</div>`;
+    card.querySelector('[data-ex="s-chk"]').disabled = true;
+  }
+  /* Morphologie */
+  function rMorpho(c) {
+    if (!E.s5) E.s5 = { q: X.q5.map(q => mixEx(q[4], 0)), r: X.q5.map(() => null), rep: X.q5.map(() => -1) };
+    const S = E.s5, k = S.r.filter(x => x !== null).length, ok = S.r.filter(x => x === true).length;
+    c.innerHTML = `<p class="muet">Une seule réponse possible par question. La correction apparaît aussitôt.</p><p class="ex-score">${k ? `${ok} / ${X.q5.length} justes (${k} répondues)` : ""}</p>
+${X.q5.map((q, i) => `<article class="ex-carte"><span class="ex-leg">${h(q[1])}</span><p class="ex-lat" lang="la">${q[2]}</p><p><strong>${h(q[3] || "Quelle est cette forme ?")}</strong> <i lang="la">${h(q[0])}</i></p>
+${S.q[i].map((o, j) => { const rep = S.r[i] !== null; return `<button type="button" class="ex-opt ex-bouton${rep && o.c ? " ok" : ""}${rep && S.rep[i] === j && !o.c ? " non" : ""}" data-ex="m-rep" data-i="${i}" data-j="${j}"${rep ? " disabled" : ""}>${h(o.t)}</button>`; }).join("")}
+${S.r[i] !== null ? `<div class="retour ${S.r[i] ? "ok" : "non"}"><strong>${S.r[i] ? "Juste." : "Pas tout à fait."}</strong> ${h(q[5])}</div>` : ""}</article>`).join("")}
+<div class="actions"><button class="btn second" type="button" data-ex="m-raz">Recommencer</button></div>`;
+  }
+  /* Mots */
+  function rMots(c) {
+    const W = X.w.map(x => x.split("|"));
+    if (!E.mt) E.mt = { dir: "la", q: melanger(W.map((_, i) => i)), flip: false, sus: 0 };
+    const M = E.mt, la = M.dir === "la";
+    let html = `<div class="ex-pilules"><button type="button" class="ex-pilule" data-ex="w-dir" data-d="la" aria-pressed="${la}">Latin vers français</button><button type="button" class="ex-pilule" data-ex="w-dir" data-d="fr" aria-pressed="${!la}">Français vers latin</button></div>`;
+    if (!M.q.length) html += `<div class="ex-carte"><p class="ex-score">Série terminée : ${W.length} mots sur ${W.length}.</p><div class="actions"><button class="btn" type="button" data-ex="w-raz">Recommencer</button></div></div>`;
+    else { const w = W[M.q[0]], av = la ? `<span class="ex-gros" lang="la">${h(w[0])}</span>` : `<span class="ex-gros">${h(w[1])}</span>`, ar = la ? `<span class="ex-gros">${h(w[1])}</span>` : `<span class="ex-gros" lang="la">${h(w[0])}</span>`;
+      html += `<p class="muet">${M.sus} sus · ${M.q.length} à passer</p><button type="button" class="ex-flash" data-ex="w-flip" aria-label="Retourner la carte">${M.flip ? ar : av}<span class="muet">${M.flip ? "" : "Touche pour retourner "}${h(w[2])}</span></button>${M.flip ? `<div class="actions"><button class="btn" type="button" data-ex="w-sus">Je savais</button><button class="btn second" type="button" data-ex="w-rev">À revoir</button></div>` : ""}`; }
+    c.innerHTML = html;
+  }
+  /* Question finale */
+  function rFin(c) {
+    const F = X.fin; if (!E.fin.o) E.fin.o = mixEx(F.options, 0);
+    const f = E.fin;
+    c.innerHTML = `<p class="muet">${h(F.intro)}</p><div class="ex-carte"><p class="ex-lat" lang="la">${F.texte.split("\n").map(h).join("<br>")}</p><fieldset><legend>${h(F.q)}</legend>${f.o.map((o, j) => `<button type="button" class="ex-opt ex-bouton${f.fait && o.c ? " ok" : ""}${f.fait && f.rep === j && !o.c ? " non" : ""}" data-ex="f-rep" data-j="${j}"${f.fait ? " disabled" : ""}>${h(o.t)}</button>`).join("")}</fieldset>${f.fait ? `<div class="retour ${f.o[f.rep].c ? "ok" : "non"}"><strong>${f.o[f.rep].c ? "Juste." : "Pas tout à fait."}</strong> ${h(F.bon)}</div>` : ""}</div>
+<div class="ex-carte"><label class="ex-leg" for="f-txt">Explique l'effet produit</label><textarea id="f-txt" class="ex-zone" placeholder="Rédige ta réponse en quelques lignes"></textarea><div class="actions"><button class="btn" type="button" data-ex="f-cor">Voir le corrigé</button></div><div id="f-corr"></div></div>`;
+  }
+  app.innerHTML = `<h1 tabindex="-1">Tristes ${h(t.ref)} : exercices</h1>${ongletsTristes("exercices")}<p class="muet"><a href="#tristes/lire/${t.id}">${h(t.titre)}</a> · <a href="#tristes/exercices">Autres élégies</a></p>
+<nav class="ex-onglets" aria-label="Séries d'exercices">${EX_ONGLETS.map(([k, n]) => `<button type="button" class="ex-onglet" data-tab="${k}" data-ex="onglet" aria-selected="${k === E.tab}">${n}</button>`).join("")}</nav><div id="ex-corps"></div>`;
+  window.__exCtx = { id, E, X, D, blocsApp, blocsTr, blocsRt, rendre, corrigerStruct, CRIT };
+  rendre();
+}
+if (!window.__exBranche) {
+  window.__exBranche = true;
+  app.addEventListener("click", ev => {
+    const el = ev.target.closest("[data-ex]"), C = window.__exCtx; if (!el || !C) return;
+    const { E, X, D, rendre } = C, a = el.dataset.ex, A = E.a;
+    if (a === "onglet") { E.tab = el.dataset.tab; rendre(); return; }
+    if (a === "a-bloc") { A.b = +el.dataset.b; A.sel = null; }
+    else if (a === "a-la") { const d = +el.dataset.d, P = A.pairs[A.b] || (A.pairs[A.b] = {}); if (A.chk[A.b]) return; if (d in P) { delete P[d]; A.sel = d; } else A.sel = A.sel === d ? null : d; }
+    else if (a === "a-fr") { const d = +el.dataset.d, P = A.pairs[A.b] || (A.pairs[A.b] = {}); if (A.chk[A.b]) return; Object.keys(P).forEach(k => { if (P[k] === d) delete P[k]; }); if (A.sel !== null) { P[A.sel] = d; A.sel = null; } }
+    else if (a === "a-chk") { A.chk[A.b] = true; A.sel = null; }
+    else if (a === "a-fix") { const P = A.pairs[A.b]; Object.keys(P).forEach(k => { if (P[k] !== +k) delete P[k]; }); A.chk[A.b] = false; }
+    else if (a === "a-sol") { const P = A.pairs[A.b] || (A.pairs[A.b] = {}); C.blocsApp[A.b].forEach(d => P[d] = d); A.chk[A.b] = true; A.sel = null; }
+    else if (a === "a-raz") { A.pairs[A.b] = {}; A.chk[A.b] = false; A.sel = null; A.ordre[A.b] = melanger(C.blocsApp[A.b]); }
+    else if (a === "t-bloc") { E.tr.b = +el.dataset.b; }
+    else if (a === "t-chk" || a === "t-sol" || a === "t-raz") {
+      const ins = [...app.querySelectorAll(".ex-trou")]; let n = 0;
+      ins.forEach(i => { if (a === "t-raz") { i.value = ""; i.className = "ex-trou"; return; } if (a === "t-sol") { i.value = i.dataset.rep; i.className = "ex-trou ok"; return; } const ok = luV(i.value) === luV(i.dataset.rep); i.className = "ex-trou " + (ok ? "ok" : "non"); if (ok) n++; });
+      const fb = $("#ex-fb"); fb.innerHTML = a === "t-chk" ? `<div class="retour ${n === ins.length ? "ok" : "non"}"><strong>${n} / ${ins.length}</strong> ${n === ins.length ? "Tout est juste." : "Corrige les cases rouges, ou affiche les réponses puis refais l'exercice de tête."}</div>` : "";
+      return;
+    }
+    else if (a === "r-bloc") { E.rt.b = +el.dataset.b; E.rt.s = 0; }
+    else if (a === "r-go") { const ta = $("#r-txt"); if (ta) E.rt.txt[E.rt.b] = ta.value; E.rt.s = +el.dataset.s; }
+    else if (a === "s-chk") { corrigerStructAt(el); return; }
+    else if (a === "s-raz") { E.s4 = null; }
+    else if (a === "m-rep") { const S = E.s5, i = +el.dataset.i, j = +el.dataset.j; if (S.r[i] !== null) return; S.rep[i] = j; S.r[i] = S.q[i][j].c; }
+    else if (a === "m-raz") { E.s5 = null; }
+    else if (a === "w-dir") { E.mt.dir = el.dataset.d; E.mt.flip = false; }
+    else if (a === "w-flip") { E.mt.flip = !E.mt.flip; }
+    else if (a === "w-sus") { E.mt.q.shift(); E.mt.sus++; E.mt.flip = false; }
+    else if (a === "w-rev") { E.mt.q.push(E.mt.q.shift()); E.mt.flip = false; }
+    else if (a === "w-raz") { E.mt = null; }
+    else if (a === "f-rep") { if (E.fin.fait) return; E.fin.fait = true; E.fin.rep = +el.dataset.j; }
+    else if (a === "f-cor") { const F = X.fin; $("#f-corr").innerHTML = `<div class="retour"><strong>Corrigé.</strong> ${h(F.corrige)}<fieldset class="ex-crit"><legend>Mon auto-évaluation</legend>${F.criteres.map(x => `<label class="ex-opt"><input type="checkbox"><span>${h(x)}</span></label>`).join("")}</fieldset></div>`; return; }
+    else return;
+    const y = window.scrollY; rendre(); if (a === "s-raz" || a === "m-raz" || a === "w-raz") window.scrollTo(0, y);
+  });
+  function corrigerStructAt(el) { const C = window.__exCtx, i = +el.dataset.i, card = el.closest("article"); C.corrigerStruct(card, i, false); const S = C.E.s4, k = S.r.filter(x => x !== null).length, ok = S.r.filter(x => x === true).length; const sc = app.querySelector(".ex-score"); if (sc) sc.textContent = `${ok} / ${C.X.q4.length} tournures maîtrisées (${k} corrigées)`; }
+  app.addEventListener("change", ev => { const el = ev.target; if (el.dataset && el.dataset.ex === "r-crit" && window.__exCtx) { const C = window.__exCtx, R = C.E.rt, cr = R.crit[R.b]; cr[+el.dataset.i] = el.checked; C.rendre(); } });
+  app.addEventListener("input", ev => { if (ev.target.classList && ev.target.classList.contains("ex-trou")) ev.target.className = "ex-trou"; });
+}
+
 function vueTristes(sous, id, mode) {
   const ouvrir = a => a ? `<a class="btn second" href="${h(a)}" target="_blank" rel="noopener">Ouvrir à part</a>` : "";
   if (sous === "revisions") {
     app.innerHTML = `<h1 tabindex="-1">Les Tristes : réviser le cours</h1>${ongletsTristes("revisions")}
 ${REVISIONS_TRISTES.map(r => `<section class="tr-rev"><h2>${h(r.titre)}</h2><p class="muet">${h(r.sous)}</p><p class="actions"><a class="btn" href="${h(r.page)}" target="_blank" rel="noopener">Plein écran</a></p><iframe class="tr-cadre" src="${h(r.page)}" title="${h(r.titre)}" loading="lazy"></iframe></section>`).join("")}
-<section><h2>Réviser chaque élégie</h2><p class="muet">Une page de révision par texte : lecture bilingue, appariement, trous, retraduction, structures, morphologie, mots.</p><ul class="tr-liste">${TEXTES_TRISTES.filter(t => t.revision).map(t => `<li><a href="${h(t.revision)}" target="_blank" rel="noopener"><strong>Tristes ${h(t.ref)}</strong> : ${h(t.titre)}</a></li>`).join("")}</ul></section>`;
+<p class="vers-devoirs"><a href="#tristes/exercices">Exercices par élégie : appariement, trous, retraduction, structures, morphologie, mots</a></p>`;
     return;
   }
+  if (sous === "juxta") {
+    app.innerHTML = `<h1 tabindex="-1">Les Tristes : juxtas</h1>${ongletsTristes("juxta")}<p class="muet">Le texte latin groupe de mots par groupe de mots, avec sa traduction et des remarques. Tu peux cacher la traduction pour t'entraîner.</p>
+<ul class="tr-textes">${TEXTES_TRISTES.filter(x => typeof JUXTA !== "undefined" && JUXTA[x.id]).map(x => `<li><a href="#tristes/lire/${x.id}/juxta"><span class="borne" aria-hidden="true">${h(x.ref)}</span><span class="borne-txt"><strong>${h(x.titre)}</strong><span>${h(x.chapo)}</span><span>Juxta : latin, français, notes</span></span></a></li>`).join("")}</ul>`;
+    return;
+  }
+  if (sous === "exercices") { vueExosElegies(id); return; }
   if (sous === "lire") {
     const t = TEXTES_TRISTES.find(x => x.id === id);
     if (!t) {
@@ -740,7 +918,7 @@ ${mode === "juxta" && typeof JUXTA !== "undefined" && JUXTA[t.id] ? juxtaHtml(t)
 <div${mode === "juxta" && typeof JUXTA !== "undefined" && JUXTA[t.id] ? " hidden" : ""} id="tr-seul">
 <p class="tr-outils"><button class="btn second" type="button" id="tr-moins" aria-label="Réduire le texte">A−</button><button class="btn second" type="button" id="tr-plus" aria-label="Agrandir le texte">A+</button><label><input type="checkbox" id="tr-num"> Numéroter les vers</label></p>
 <ol class="vers-lat" lang="la" id="tr-vers">${vers.map((v, k) => `<li value="${k + 1}"${(k + 1) % 5 === 0 ? ' class="n5"' : ""}>${h(v)}</li>`).join("")}</ol>
-<p class="actions">${t.chapitre ? `<a class="btn" href="#${t.chapitre}">Traduire ce texte pas à pas</a>` : ""}${t.version ? `<a class="btn second" href="#${t.version}">S'entraîner à la version</a>` : ""}${t.revision ? `<a class="btn second" href="${h(t.revision)}" target="_blank" rel="noopener">Page de révision</a>` : ""}</p>
+<p class="actions">${t.chapitre ? `<a class="btn" href="#${t.chapitre}">Traduire ce texte pas à pas</a>` : ""}${t.version ? `<a class="btn second" href="#${t.version}">S'entraîner à la version</a>` : ""}${typeof EXOS_TRISTES !== "undefined" && EXOS_TRISTES[t.id] ? `<a class="btn second" href="#tristes/exercices/${t.id}">Exercices</a>` : ""}</p>
 </div>
 <p class="actions">${pr ? `<a class="btn discret" href="#tristes/lire/${pr.id}">← ${h(pr.ref)}</a>` : ""}<a class="btn discret" href="#tristes/lire">Tous les textes</a>${su ? `<a class="btn discret" href="#tristes/lire/${su.id}">${h(su.ref)} →</a>` : ""}</p>`;
     const ol = $("#tr-vers"), cb = $("#tr-num");
@@ -759,6 +937,8 @@ ${mode === "juxta" && typeof JUXTA !== "undefined" && JUXTA[t.id] ? juxtaHtml(t)
 <ul class="tr-hub">
 ${bloc("Réviser le cours", "Ovide et Karen Blixen : contexte, vie d'Ovide, thèmes, défi final.", "#tristes/revisions", "Ouvrir les révisions")}
 ${bloc("Lire les textes en latin", `${TEXTES_TRISTES.map(t => t.ref).join(", ")}. D'autres textes arriveront au fil du cours.`, "#tristes/lire", "Ouvrir la lecture")}
+${bloc("Juxtas", "Latin, français et notes en regard, avec la traduction à cacher pour s'entraîner.", "#tristes/juxta", "Ouvrir les juxtas")}
+${bloc("Exercices par élégie", "Appariement, trous, retraduction, structures, morphologie, mots.", "#tristes/exercices", "Ouvrir les exercices")}
 ${bloc("Traduire pas à pas", "Une traduction guidée pour chaque élégie du livre III : résumé, deux phrases guidées, version.", "#c28", "Commencer par l'introduction")}
 ${bloc("Préparer la version du devoir", "Tristes III, 9 : méthode, quatre entraînements, versions blanches.", "#c47", "Ouvrir la préparation")}
 ${bloc("Apprendre le vocabulaire", "300 mots à connaître, en dix listes de trente.", "#c52", "Ouvrir les listes")}
