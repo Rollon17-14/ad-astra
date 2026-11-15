@@ -686,6 +686,59 @@ ${liste.length ? `<div class="tab-wrap"><table class="donnees"><thead><tr><th>É
 }
 const o_a = (o, c) => /[1-3]/.test(o.f[c.id] || "");
 
+/* ---------- Tristes : tout au même endroit (révisions, lecture, traductions guidées) ---------- */
+const REVISIONS_TRISTES = [
+  { titre: "Ovide et Karen Blixen : le cours d'introduction", sous: "Séquence 1 : partir, arriver en terre étrangère. Contexte, vie d'Ovide, Blixen, défi final.", page: "revisions/introduction.html", original: "https://claude.ai/artifact/QhRLzUx4o8BnSnT2wjBhrk" }
+];
+const SOUS_TRISTES = [["accueil", "Vue d'ensemble"], ["revisions", "Réviser le cours"], ["lire", "Lire les textes"]];
+function ongletsTristes(actif) {
+  return `<nav class="sous-onglets" aria-label="Les Tristes">${SOUS_TRISTES.map(([k, n]) => `<a href="#tristes${k === "accueil" ? "" : "/" + k}"${k === actif ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>`;
+}
+function vueTristes(sous, id) {
+  const ouvrir = a => a ? `<a class="btn second" href="${h(a)}" target="_blank" rel="noopener">Ouvrir à part</a>` : "";
+  if (sous === "revisions") {
+    app.innerHTML = `<h1 tabindex="-1">Les Tristes : réviser le cours</h1>${ongletsTristes("revisions")}
+${REVISIONS_TRISTES.map(r => `<section class="tr-rev"><h2>${h(r.titre)}</h2><p class="muet">${h(r.sous)}</p><p class="actions"><a class="btn" href="${h(r.page)}" target="_blank" rel="noopener">Plein écran</a></p><iframe class="tr-cadre" src="${h(r.page)}" title="${h(r.titre)}" loading="lazy"></iframe></section>`).join("")}
+<section><h2>Réviser chaque élégie</h2><p class="muet">Une page de révision par texte : lecture bilingue, appariement, trous, retraduction, structures, morphologie, mots.</p><ul class="tr-liste">${TEXTES_TRISTES.filter(t => t.revision).map(t => `<li><a href="${h(t.revision)}" target="_blank" rel="noopener"><strong>Tristes ${h(t.ref)}</strong> : ${h(t.titre)}</a></li>`).join("")}</ul></section>`;
+    return;
+  }
+  if (sous === "lire") {
+    const t = TEXTES_TRISTES.find(x => x.id === id);
+    if (!t) {
+      app.innerHTML = `<h1 tabindex="-1">Les Tristes : lire les textes</h1>${ongletsTristes("lire")}<p class="muet">Les textes latins du livre III, au fur et à mesure du cours. Lis à voix haute, repère le rythme du distique, puis passe à la traduction guidée.</p>
+<ul class="tr-textes">${TEXTES_TRISTES.map(x => `<li><a href="#tristes/lire/${x.id}"><span class="borne" aria-hidden="true">${h(x.ref)}</span><span class="borne-txt"><strong>${h(x.titre)}</strong><span>${h(x.chapo)}</span><span>${x.vers.split("\n").length} vers</span></span></a></li>`).join("")}</ul>`;
+      return;
+    }
+    const vers = t.vers.split("\n"), i = TEXTES_TRISTES.indexOf(t), pr = TEXTES_TRISTES[i - 1], su = TEXTES_TRISTES[i + 1];
+    let taille = 1.2, num = true;
+    try { taille = +localStorage.getItem("tr-taille") || 1.2; num = localStorage.getItem("tr-num") !== "0"; } catch (e) { }
+    app.innerHTML = `<h1 tabindex="-1">Tristes ${h(t.ref)} : ${h(t.titre)}</h1>${ongletsTristes("lire")}<p class="muet">${h(t.chapo)}</p>
+<p class="tr-outils"><button class="btn second" type="button" id="tr-moins" aria-label="Réduire le texte">A−</button><button class="btn second" type="button" id="tr-plus" aria-label="Agrandir le texte">A+</button><label><input type="checkbox" id="tr-num"> Numéroter les vers</label></p>
+<ol class="vers-lat" lang="la" id="tr-vers">${vers.map((v, k) => `<li value="${k + 1}"${(k + 1) % 5 === 0 ? ' class="n5"' : ""}>${h(v)}</li>`).join("")}</ol>
+<p class="actions">${t.chapitre ? `<a class="btn" href="#${t.chapitre}">Traduire ce texte pas à pas</a>` : ""}${t.version ? `<a class="btn second" href="#${t.version}">S'entraîner à la version</a>` : ""}${t.revision ? `<a class="btn second" href="${h(t.revision)}" target="_blank" rel="noopener">Page de révision</a>` : ""}</p>
+<p class="actions">${pr ? `<a class="btn discret" href="#tristes/lire/${pr.id}">← ${h(pr.ref)}</a>` : ""}<a class="btn discret" href="#tristes/lire">Tous les textes</a>${su ? `<a class="btn discret" href="#tristes/lire/${su.id}">${h(su.ref)} →</a>` : ""}</p>`;
+    const ol = $("#tr-vers"), cb = $("#tr-num");
+    const appliquer = () => { ol.style.fontSize = taille + "rem"; ol.classList.toggle("sans-num", !num); cb.checked = num; try { localStorage.setItem("tr-taille", taille); localStorage.setItem("tr-num", num ? "1" : "0"); } catch (e) { } };
+    $("#tr-moins").onclick = () => { taille = Math.max(.9, +(taille - .15).toFixed(2)); appliquer(); };
+    $("#tr-plus").onclick = () => { taille = Math.min(2.2, +(taille + .15).toFixed(2)); appliquer(); };
+    cb.onchange = () => { num = cb.checked; appliquer(); };
+    appliquer();
+    return;
+  }
+  const elegies = (PARCOURS.find(p => p.chapitres.some(c => c.id === "c28")) || { chapitres: [] }).chapitres.filter(c => c.id !== "c28");
+  const parties = id2 => PARCOURS.find(p => p.chapitres.some(c => c.id === id2));
+  const bloc = (titre, sous, lien, texte) => `<li><a href="${lien}"><strong>${titre}</strong><span>${sous}</span><span class="tr-go">${texte}</span></a></li>`;
+  app.innerHTML = `<h1 tabindex="-1">Les <em>Tristes</em> d'Ovide</h1><p class="muet">Tout pour réviser le livre III au même endroit : le cours d'introduction, les textes latins, les traductions guidées, la version et le vocabulaire.</p>${ongletsTristes("accueil")}
+<ul class="tr-hub">
+${bloc("Réviser le cours", "Ovide et Karen Blixen : contexte, vie d'Ovide, thèmes, défi final.", "#tristes/revisions", "Ouvrir les révisions")}
+${bloc("Lire les textes en latin", `${TEXTES_TRISTES.map(t => t.ref).join(", ")}. D'autres textes arriveront au fil du cours.`, "#tristes/lire", "Ouvrir la lecture")}
+${bloc("Traduire pas à pas", "Une traduction guidée pour chaque élégie du livre III : résumé, deux phrases guidées, version.", "#c28", "Commencer par l'introduction")}
+${bloc("Préparer la version du devoir", "Tristes III, 9 : méthode, quatre entraînements, versions blanches.", "#c47", "Ouvrir la préparation")}
+${bloc("Apprendre le vocabulaire", "300 mots à connaître, en dix listes de trente.", "#c52", "Ouvrir les listes")}
+</ul>
+<section><h2>Les élégies du livre III</h2><ol class="via">${elegies.map(borneHtml).join("")}</ol></section>`;
+}
+
 /* ---------- Routage : #parcours, #c3, #c3-2, #c3-fin, #atelier, #lexique, #profil, #professeur ---------- */
 function route() {
   const r = location.hash.replace(/^#\/?/, "") || "parcours";
@@ -696,6 +749,7 @@ function route() {
   else if (c) vueChapitre(c);
   else if (r === "devoirs") { onglet = r; vueDevoirs(); }
   else if (r === "elex") { onglet = r; vueElex(); }
+  else if (/^tristes(\/|$)/.test(r)) { onglet = "tristes"; const [, sous, id] = r.split("/"); vueTristes(sous, id); }
   else if (r === "atelier") { onglet = r; vueAtelier(); }
   else if (r === "lexique") { onglet = r; vueLexique(); }
   else if (r === "profil") { onglet = r; vueProfil(); }

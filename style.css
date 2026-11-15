@@ -397,3 +397,27 @@ ol.vers li:nth-child(even) { padding-left: 1.2rem; }
 @media (max-width: 370px) { nav.principal a { padding: .35rem .25rem; font-size: .78rem; } }
 .grille-q { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: .3rem .8rem; padding: .4rem .7rem; margin-bottom: .4rem; }
 .grille-q small { grid-column: 1 / -1; margin: 0; } .grille-q small:empty { display: none; }
+
+/* ---------- Onglet Tristes ---------- */
+.sous-onglets { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1rem 0 1.4rem; }
+.sous-onglets a { padding: .4rem .9rem; border: 2px solid var(--trait); border-radius: 999px; color: var(--encre); text-decoration: none; font-weight: 700; }
+.sous-onglets a:hover { border-color: var(--pourpre); }
+.sous-onglets a[aria-current] { background: var(--pourpre); border-color: var(--pourpre); color: var(--sur-pourpre); }
+.tr-hub, .tr-textes, .tr-liste { list-style: none; padding: 0; margin: 0 0 1.6rem; display: grid; gap: .7rem; }
+.tr-hub a, .tr-liste a { display: grid; gap: .15rem; padding: .9rem 1.1rem; border: 2px solid var(--trait); border-radius: 12px; text-decoration: none; color: var(--encre); background: var(--carte); }
+.tr-hub a:hover, .tr-liste a:hover, .tr-textes a:hover { border-color: var(--pourpre); }
+.tr-hub .tr-go { color: var(--pourpre); font-weight: 700; }
+.tr-textes a { display: flex; gap: .9rem; align-items: center; padding: .8rem 1rem; border: 2px solid var(--trait); border-radius: 12px; text-decoration: none; color: var(--encre); background: var(--carte); }
+.tr-textes .borne { flex: none; width: auto; min-width: 3.6rem; padding: 0 .6rem; border-radius: 999px; }
+.tr-cadre { width: 100%; height: 78vh; min-height: 460px; border: 2px solid var(--trait); border-radius: 12px; background: #fff; }
+.tr-outils { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: 1rem 0; }
+.tr-outils .btn { padding: .35rem .8rem; }
+ol.vers-lat { list-style: none; padding: 0; margin: 0 0 1.4rem; font-family: "Palatino Linotype", Palatino, Georgia, serif; line-height: 1.7; max-width: 42rem; counter-reset: v; }
+ol.vers-lat li { position: relative; padding-left: 2.6rem; font-style: italic; }
+ol.vers-lat li:nth-child(even) { padding-left: 3.6rem; }
+ol.vers-lat li.n5::before { content: attr(value); position: absolute; left: 0; width: 2rem; text-align: right; font: 700 .8rem/2.4 var(--texte); font-style: normal; color: var(--pourpre); }
+ol.vers-lat.sans-num li.n5::before { content: none; }
+@media (max-width: 640px) { ol.vers-lat li { padding-left: 2.2rem; } ol.vers-lat li:nth-child(even) { padding-left: 3rem; } }
+@media (max-width: 640px) { nav.principal { gap: 0; } nav.principal a { padding: .35rem .42rem; font-size: .86rem; } }
+@media (max-width: 380px) { nav.principal a { padding: .35rem .3rem; font-size: .8rem; } }
+@media (max-width: 420px) { nav.principal { flex-wrap: wrap; justify-content: center; row-gap: .1rem; } nav.principal a { font-size: .9rem; padding: .35rem .55rem; } }
