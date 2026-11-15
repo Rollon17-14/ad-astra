@@ -421,3 +421,16 @@ ol.vers-lat.sans-num li.n5::before { content: none; }
 @media (max-width: 640px) { nav.principal { gap: 0; } nav.principal a { padding: .35rem .42rem; font-size: .86rem; } }
 @media (max-width: 380px) { nav.principal a { padding: .35rem .3rem; font-size: .8rem; } }
 @media (max-width: 420px) { nav.principal { flex-wrap: wrap; justify-content: center; row-gap: .1rem; } nav.principal a { font-size: .9rem; padding: .35rem .55rem; } }
+
+table.juxta { border-collapse: collapse; width: 100%; font-size: 1rem; }
+table.juxta th { text-align: left; padding: .45rem .6rem; border-bottom: 2px solid var(--encre); font-family: var(--titre); font-weight: 400; }
+table.juxta td { padding: .4rem .6rem; border-bottom: 1px solid var(--trait); vertical-align: top; }
+table.juxta tr { break-inside: avoid; }
+td.jx-n { width: 2.2rem; color: var(--pourpre); font-weight: 700; font-size: .85rem; text-align: right; }
+td.jx-la { font-family: "Palatino Linotype", Palatino, Georgia, serif; font-style: italic; width: 36%; }
+td.jx-note { font-size: .88rem; color: var(--encre2); width: 24%; }
+#tr-juxta.sans-notes .jx-note { display: none; }
+#tr-juxta.cache td.jx-fr:not(.vu) { color: transparent; background: var(--pourpre-pale); cursor: pointer; user-select: none; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+@media (max-width: 640px) { table.juxta { font-size: .92rem; } td.jx-la { width: 40%; } td.jx-note { width: 22%; } table.juxta td, table.juxta th { padding: .35rem .3rem; } }
+@media print { .entete, .pied, .sous-onglets, .tr-outils, .actions { display: none !important; } #tr-juxta .muet { display: none; } body { background: #fff; } table.juxta { font-size: 10pt; } }

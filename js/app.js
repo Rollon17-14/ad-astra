@@ -694,7 +694,29 @@ const SOUS_TRISTES = [["accueil", "Vue d'ensemble"], ["revisions", "Réviser le 
 function ongletsTristes(actif) {
   return `<nav class="sous-onglets" aria-label="Les Tristes">${SOUS_TRISTES.map(([k, n]) => `<a href="#tristes${k === "accueil" ? "" : "/" + k}"${k === actif ? ' aria-current="page"' : ""}>${n}</a>`).join("")}</nav>`;
 }
-function vueTristes(sous, id) {
+function juxtaLignes(t) {
+  const vers = t.vers.split("\n"), sortie = [];
+  JUXTA[t.id].split("\n").forEach(l => {
+    const [n, la, fr, note] = l.split("|"), num = n.trim() ? +n : null;
+    sortie.push({ n: num, la: la.trim() || (num ? vers[num - 1] : ""), fr: (fr || "").trim(), note: (note || "").trim() });
+  });
+  return sortie;
+}
+function juxtaHtml(t) {
+  const L = juxtaLignes(t), notes = L.some(x => x.note);
+  return `<div id="tr-juxta"><p class="muet">Chaque groupe de mots latins est suivi de sa traduction littérale${notes ? ", puis d'une remarque de grammaire ou de vocabulaire" : ""}. Cache la traduction pour t'entraîner à traduire, puis vérifie.</p>
+<p class="tr-outils"><label><input type="checkbox" id="jx-cache"> Cacher la traduction (clic sur une case pour la voir)</label>${notes ? `<label><input type="checkbox" id="jx-notes" checked> Notes</label>` : ""}<button class="btn second" type="button" id="jx-imp">Imprimer</button></p>
+<div class="tab-wrap"><table class="juxta"><thead><tr><th scope="col" class="jx-n"><span class="sr">Vers</span></th><th scope="col">Texte latin</th><th scope="col">Traduction</th>${notes ? `<th scope="col" class="jx-note">Notes</th>` : ""}</tr></thead><tbody>${L.map(x => `<tr><td class="jx-n">${x.n || ""}</td><td class="jx-la" lang="la">${h(x.la)}</td><td class="jx-fr" tabindex="0">${h(x.fr)}</td>${notes ? `<td class="jx-note">${h(x.note)}</td>` : ""}</tr>`).join("")}</tbody></table></div></div>`;
+}
+function brancherJuxta() {
+  const j = $("#tr-juxta"); if (!j) return;
+  const c = $("#jx-cache"), n = $("#jx-notes");
+  c.onchange = () => j.classList.toggle("cache", c.checked);
+  if (n) n.onchange = () => j.classList.toggle("sans-notes", !n.checked);
+  $$(".jx-fr", j).forEach(td => { const f = () => td.classList.toggle("vu"); td.onclick = f; td.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); f(); } }; });
+  $("#jx-imp").onclick = () => window.print();
+}
+function vueTristes(sous, id, mode) {
   const ouvrir = a => a ? `<a class="btn second" href="${h(a)}" target="_blank" rel="noopener">Ouvrir à part</a>` : "";
   if (sous === "revisions") {
     app.innerHTML = `<h1 tabindex="-1">Les Tristes : réviser le cours</h1>${ongletsTristes("revisions")}
@@ -713,9 +735,13 @@ ${REVISIONS_TRISTES.map(r => `<section class="tr-rev"><h2>${h(r.titre)}</h2><p c
     let taille = 1.2, num = true;
     try { taille = +localStorage.getItem("tr-taille") || 1.2; num = localStorage.getItem("tr-num") !== "0"; } catch (e) { }
     app.innerHTML = `<h1 tabindex="-1">Tristes ${h(t.ref)} : ${h(t.titre)}</h1>${ongletsTristes("lire")}<p class="muet">${h(t.chapo)}</p>
+${typeof JUXTA !== "undefined" && JUXTA[t.id] ? `<nav class="sous-onglets" aria-label="Affichage du texte"><a href="#tristes/lire/${t.id}"${mode !== "juxta" ? ' aria-current="page"' : ""}>Latin seul</a><a href="#tristes/lire/${t.id}/juxta"${mode === "juxta" ? ' aria-current="page"' : ""}>Juxta : latin et français</a></nav>` : ""}
+${mode === "juxta" && typeof JUXTA !== "undefined" && JUXTA[t.id] ? juxtaHtml(t) : ""}
+<div${mode === "juxta" && typeof JUXTA !== "undefined" && JUXTA[t.id] ? " hidden" : ""} id="tr-seul">
 <p class="tr-outils"><button class="btn second" type="button" id="tr-moins" aria-label="Réduire le texte">A−</button><button class="btn second" type="button" id="tr-plus" aria-label="Agrandir le texte">A+</button><label><input type="checkbox" id="tr-num"> Numéroter les vers</label></p>
 <ol class="vers-lat" lang="la" id="tr-vers">${vers.map((v, k) => `<li value="${k + 1}"${(k + 1) % 5 === 0 ? ' class="n5"' : ""}>${h(v)}</li>`).join("")}</ol>
 <p class="actions">${t.chapitre ? `<a class="btn" href="#${t.chapitre}">Traduire ce texte pas à pas</a>` : ""}${t.version ? `<a class="btn second" href="#${t.version}">S'entraîner à la version</a>` : ""}${t.revision ? `<a class="btn second" href="${h(t.revision)}" target="_blank" rel="noopener">Page de révision</a>` : ""}</p>
+</div>
 <p class="actions">${pr ? `<a class="btn discret" href="#tristes/lire/${pr.id}">← ${h(pr.ref)}</a>` : ""}<a class="btn discret" href="#tristes/lire">Tous les textes</a>${su ? `<a class="btn discret" href="#tristes/lire/${su.id}">${h(su.ref)} →</a>` : ""}</p>`;
     const ol = $("#tr-vers"), cb = $("#tr-num");
     const appliquer = () => { ol.style.fontSize = taille + "rem"; ol.classList.toggle("sans-num", !num); cb.checked = num; try { localStorage.setItem("tr-taille", taille); localStorage.setItem("tr-num", num ? "1" : "0"); } catch (e) { } };
@@ -723,6 +749,7 @@ ${REVISIONS_TRISTES.map(r => `<section class="tr-rev"><h2>${h(r.titre)}</h2><p c
     $("#tr-plus").onclick = () => { taille = Math.min(2.2, +(taille + .15).toFixed(2)); appliquer(); };
     cb.onchange = () => { num = cb.checked; appliquer(); };
     appliquer();
+    brancherJuxta();
     return;
   }
   const elegies = (PARCOURS.find(p => p.chapitres.some(c => c.id === "c28")) || { chapitres: [] }).chapitres.filter(c => c.id !== "c28");
@@ -749,7 +776,7 @@ function route() {
   else if (c) vueChapitre(c);
   else if (r === "devoirs") { onglet = r; vueDevoirs(); }
   else if (r === "elex") { onglet = r; vueElex(); }
-  else if (/^tristes(\/|$)/.test(r)) { onglet = "tristes"; const [, sous, id] = r.split("/"); vueTristes(sous, id); }
+  else if (/^tristes(\/|$)/.test(r)) { onglet = "tristes"; const [, sous, id, mode] = r.split("/"); vueTristes(sous, id, mode); }
   else if (r === "atelier") { onglet = r; vueAtelier(); }
   else if (r === "lexique") { onglet = r; vueLexique(); }
   else if (r === "profil") { onglet = r; vueProfil(); }
