@@ -44,15 +44,15 @@ var PARTIE_BILAN = (function () {
 <h3>Mots invariables</h3><ul class="lex-fiche">${lex.inv.map(x => `<li>${x.replace(/^([^:]+):/, (m, a) => la(a.trim()) + " :")}</li>`).join("")}</ul>`;
     return { id, borne, genre: "Devoir bilan,", titre, resume, etapes: [
       { t: "lecon", titre: "Le récit et la fiche de lexique", texte: fiche },
-      { t: "verbe", niveau: 2, infinitif: true, titre: "I. Analyse verbale", vocab,
+      { t: "verbe", niveau: 2, infinitif: true, titre: "I. Analyse verbale", vocab, lexInline: true,
         intro: "Tous les verbes sont au présent de l'indicatif. Pour chaque forme : la voix, la personne, l'infinitif du verbe, puis la traduction.", items: verbes },
-      { t: "nominal", titre: "II. Analyse nominale et adjectivale", vocab,
+      { t: "nominal", titre: "II. Analyse nominale et adjectivale", vocab, lexInline: true,
         intro: "Donne <b>toutes</b> les analyses possibles de chaque forme (cas, nombre, genre) et son nominatif singulier. Pour un adjectif, pense aux trois genres.", items: noms },
-      { t: "version", titre: "III. Le présent actif et passif en contexte", vocab,
+      { t: "version", titre: "III. Le présent actif et passif en contexte", vocab, lexInline: true,
         intro: "Traduis chaque phrase et note la voix du verbe (actif ou passif). Au passif, cherche le complément d'agent : " + la("a / ab") + " + ablatif.", phrases },
-      { t: "quiz", titre: "IV. Les compléments circonstanciels : la fonction", vocab,
+      { t: "quiz", titre: "IV. Les compléments circonstanciels : la fonction", vocab, lexInline: true,
         intro: "Quelle est la fonction précise du groupe souligné ? La correction donne la traduction et la construction.", questions: ccs.map(x => cc(...x)) },
-      { t: "version", titre: "IV. Les compléments circonstanciels : la traduction", vocab,
+      { t: "version", titre: "IV. Les compléments circonstanciels : la traduction", vocab, lexInline: true,
         intro: "Traduis maintenant ces mêmes phrases, en rendant bien le complément circonstanciel.",
         phrases: ccs.map(x => ({ la: x[0].replace(/<\/?u>/g, ""), fr: x[2], note: x[1] + " " + x[3] })) }
     ] };

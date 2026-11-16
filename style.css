@@ -467,3 +467,7 @@ td.jx-note { font-size: .88rem; color: var(--encre2); width: 24%; }
 .ex-flash { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .6rem; width: 100%; min-height: 12rem; padding: 1.4rem; border: 2px solid var(--trait); border-radius: 12px; background: var(--carte); color: var(--encre); cursor: pointer; text-align: center; }
 .ex-gros { font-family: "Palatino Linotype", Palatino, Georgia, serif; font-size: 2rem; line-height: 1.2; }
 .ex-fbx .retour, .ex-carte .retour { margin-top: .8rem; }
+
+.lex-inline { display: block; margin: .15rem 0 .4rem; font-size: .92rem; color: var(--encre2); }
+.lex-ligne { margin: .3rem 0 .6rem; font-size: .92rem; line-height: 1.55; color: var(--encre2); }
+.lex-ligne b:first-child { color: var(--encre); }
