@@ -194,6 +194,7 @@ function lexDe(texte, vocab) {
 }
 const lexMiseEnForme = x => x.replace(/^([^:]+):/, (m, a) => `<i class="la"><b>${a.trim()}</b></i> :`);
 const lexLigne = (texte, vocab) => { const L = lexDe(texte, vocab); return L.length ? `<p class="lex-ligne"><b>Lexique :</b> ${L.map(lexMiseEnForme).join(" · ")}</p>` : ""; };
+const lexOn = e => e.lexInline !== false && Array.isArray(e.vocab) && e.vocab.length > 0;
 function lexItem(it, vocab) {
   const ent = it.entree && (vocab || []).find(x => nomEntree(x) === it.entree);
   const x = ent || lexDe(it.forme, vocab)[0];
@@ -234,7 +235,7 @@ function etapeQcm(z, c, i, e) { blocQcm(z, e, err => succes(c, i, etoilesPour(er
 function etapeQuiz(z, c, i, e) {
   let reste = e.questions.length, err = 0;
   z.innerHTML = enTete(e) + e.questions.map((q, k) => `<div class="bloc-q" data-q="${k}"></div>`).join("");
-  e.questions.forEach((q, k) => blocQcm($(`[data-q="${k}"]`, z), Object.assign({}, q, { q: `${k + 1}. ${q.q}${e.lexInline ? lexLigne(q.q, e.vocab) : ""}` }), n => { err += n; if (--reste === 0) succes(c, i, etoilesPour(err), e.expl || ""); }));
+  e.questions.forEach((q, k) => blocQcm($(`[data-q="${k}"]`, z), Object.assign({}, q, { q: `${k + 1}. ${q.q}${lexOn(e) ? lexLigne(q.q, e.vocab) : ""}` }), n => { err += n; if (--reste === 0) succes(c, i, etoilesPour(err), e.expl || ""); }));
 }
 
 function etapeTri(z, c, i, e) {
@@ -354,7 +355,7 @@ function lireVerbe(d, a, T, M, V) {
 function etapeVerbe(z, c, i, e) {
   let essais = 0;
   const T = e.temps || ["present"], M = e.modes || ["ind"], V = e.voix !== false, n2 = e.niveau === 2;
-  z.innerHTML = enTete(e) + `<p class="muet">${n2 ? "Niveau 2 : analyse chaque forme, puis traduis-la en français." : "Niveau 1 : analyse chaque forme, comme au devoir."}</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.mot || ""}</span>${e.lexInline ? lexItem(it, e.vocab) : ""}${champsVerbe(T, M, V, n2, !!e.infinitif)}<small></small></div>`).join("")}</div>
+  z.innerHTML = enTete(e) + `<p class="muet">${n2 ? "Niveau 2 : analyse chaque forme, puis traduis-la en français." : "Niveau 1 : analyse chaque forme, comme au devoir."}</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.mot || ""}</span>${lexOn(e) ? lexItem(it, e.vocab) : ""}${champsVerbe(T, M, V, n2, !!e.infinitif)}<small></small></div>`).join("")}</div>
 <div class="actions"><button class="btn" type="button" id="valider">Valider</button></div><div id="ret"></div>`;
   $("#valider", z).onclick = () => {
     let faux = 0;
@@ -376,7 +377,7 @@ const GENRES = [["m", "Masculin"], ["f", "Féminin"], ["n", "Neutre"]];
 function etapeNominal(z, c, i, e) {
   let essais = 0;
   const champ = nom => `<label class="large">${nom}<input type="text" class="s-lem" autocomplete="off" autocapitalize="none" spellcheck="false"></label>`;
-  z.innerHTML = enTete(e) + `<p class="muet">Coche toutes les analyses possibles, indique le genre, puis écris le nominatif singulier (l'entrée du lexique).</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.adj ? "adjectif" : "nom"}</span>${e.lexInline ? lexItem(it, e.vocab) : ""}${it.adj
+  z.innerHTML = enTete(e) + `<p class="muet">Coche toutes les analyses possibles, indique le genre, puis écris le nominatif singulier (l'entrée du lexique).</p><div class="analyses verbes">${e.items.map((it, k) => `<div class="analyse verbe" data-k="${k}"><span class="forme">${it.forme}</span><span class="mot">${it.adj ? "adjectif" : "nom"}</span>${lexOn(e) ? lexItem(it, e.vocab) : ""}${it.adj
     ? `<div class="genres">${GENRES.map(([g, n]) => `<div><span class="g-nom">${n}</span>${grilleCas(k + g)}</div>`).join("")}</div><div class="rangee">${champ("Nominatif masculin singulier")}</div>`
     : `<div class="une-grille">${grilleCas(k)}</div><div class="rangee">${choix("s-g", "Genre", GENRES)}${champ("Nominatif singulier")}</div>`}<small></small></div>`).join("")}</div>
 <div class="actions"><button class="btn" type="button" id="valider">Valider</button></div><div id="ret"></div>`;
@@ -470,7 +471,7 @@ ${e.sections.map(s => `<h3 class="ex-sec">${s.titre}</h3>${s.questions.map(() =>
 function etapeVersion(z, c, i, e) {
   let reste = e.phrases.length, justes = 0;
   z.innerHTML = enTete(e) + `<p class="muet">Écris ta traduction, puis compare-la à la traduction proposée. C'est toi qui t'évalues : sois honnête, c'est ainsi qu'on progresse.</p>` +
-    e.phrases.map((p, k) => `<div class="phrase" data-k="${k}"><p class="lat" lang="la">${p.la}</p>${e.lexInline ? lexLigne(p.la, e.vocab) : ""}${p.aide ? `<p class="aide">${p.aide}</p>` : ""}<label class="sr" for="v${k}">Ta traduction</label><textarea id="v${k}" placeholder="Ta traduction"></textarea><button class="btn second" type="button">Comparer avec la traduction</button></div>`).join("");
+    e.phrases.map((p, k) => `<div class="phrase" data-k="${k}"><p class="lat" lang="la">${p.la}</p>${lexOn(e) ? lexLigne(p.la, e.vocab) : ""}${p.aide ? `<p class="aide">${p.aide}</p>` : ""}<label class="sr" for="v${k}">Ta traduction</label><textarea id="v${k}" placeholder="Ta traduction"></textarea><button class="btn second" type="button">Comparer avec la traduction</button></div>`).join("");
   $$(".phrase", z).forEach(d => $("button", d).onclick = () => {
     const p = e.phrases[+d.dataset.k]; $("button", d).remove(); $("textarea", d).readOnly = true;
     d.insertAdjacentHTML("beforeend", `<div class="trad">${p.fr}${p.note ? `<br><small>${p.note}</small>` : ""}</div><div class="seg"><button type="button" data-v="1">J'avais l'essentiel</button><button type="button" data-v="0">À retravailler</button></div>`);
