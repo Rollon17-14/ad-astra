@@ -46,7 +46,7 @@
 <li><strong>Le radical</strong> : retire la désinence du génitif singulier. <i class="la">regis</i> → radical <i class="la">reg-</i>. Le nominatif n'est pas un bon guide : <i class="la">rex</i>, <i class="la">regis</i>.</li>
 <li><strong>La désinence</strong> : isole ce qui reste dans la forme donnée, puis cherche-la dans le tableau de la déclinaison.</li>
 <li><strong>Toutes les analyses</strong> : parcours le tableau et note chaque case où la désinence apparaît. Compte le <strong>genre</strong> pour le neutre.</li></ol></aside>
-<aside class="attention"><h4>Les formes qui reviennent</h4><ul>
+<aside class="retenir"><h4>Les formes qui reviennent</h4><ul>
 <li>Le <strong>neutre</strong> a toujours le même nominatif, vocatif et accusatif ; au pluriel, ces trois cas finissent par <i class="la">-a</i> (ou <i class="la">-ia</i>).</li>
 <li>Le <strong>vocatif</strong> est identique au nominatif, sauf pour les noms en <i class="la">-us</i> de la 2e déclinaison : <i class="la">domine</i>.</li>
 <li>Le <strong>datif et l'ablatif pluriel</strong> sont toujours identiques.</li>
@@ -58,11 +58,7 @@ ${tab("rosa")}${tab("dominus")}${tab("puer")}${tab("templum")}
 ${tab("consul")}${tab("civis")}${tab("urbs")}
 <p><strong>Les neutres</strong> : <i class="la">corpus, corporis</i> (génitif pluriel en <i class="la">-um</i>) ; <i class="la">mare, maris</i> et <i class="la">animal, animalis</i> (ablatif singulier en <i class="la">-i</i>, nominatif pluriel en <i class="la">-ia</i>, génitif pluriel en <i class="la">-ium</i>).</p>
 ${tab("corpus")}${tab("mare")}${tab("animal")}` },
-      { t: "lecon", titre: "Les quatrième et cinquième déclinaisons", texte: `${tab("manus")}${tab("cornu")}${tab("res")}
-<aside class="attention"><h4>Pièges à connaître</h4><ul>
-<li><i class="la">manus</i> : la même forme sert pour le nominatif, le vocatif et le génitif singulier, et pour le nominatif, le vocatif et l'accusatif pluriel.</li>
-<li><i class="la">res, rei</i> : le génitif et le datif singulier sont identiques (<i class="la">rei</i>). Un nom comme <i class="la">dies, diei</i> est masculin (parfois féminin).</li>
-<li><i class="la">cornu</i> : un neutre de la 4e, avec un seul <i class="la">-u</i> au nominatif, vocatif, accusatif, datif et ablatif singulier.</li></ul></aside>` }
+      { t: "lecon", titre: "Les quatrième et cinquième déclinaisons", texte: `${tab("manus")}${tab("cornu")}${tab("res")}` }
     ] };
 
   /* ---------- Sujet A : le sujet du devoir, tel que posé ---------- */
@@ -78,51 +74,56 @@ ${tab("corpus")}${tab("mare")}${tab("animal")}` },
   ];
   const cA = ["Ns", "As", "Bs", "Dp", "Gp", "Np"];
 
+  const M = (f, rad, e, s, x) => D(f, "manus", rad, null, e, s, x);
+  const Rs = (f, rad, e, s, x) => D(f, "res", rad, null, e, s, x);
+  /* Les trois entraînements suivants : vocabulaire des Tristes, formes régulières */
+  const Ro = (f, rad, e, s) => D(f, "rosa", rad, null, e, s), Do = (f, rad, e, s) => D(f, "dominus", rad, null, e, s), Pu = (f, rad, ns, e, s) => D(f, "puer", rad, ns, e, s);
+  const Te = (f, rad, e, s) => D(f, "templum", rad, null, e, s), Co = (f, rad, ns, e, s) => D(f, "corpus", rad, ns, e, s), Ci = (f, rad, e, s) => D(f, "civis", rad, null, e, s);
+  const Ur = (f, rad, ns, e, s) => D(f, "urbs", rad, ns, e, s);
+
   /* ---------- Entraînement 2 : D1, D2, D3 ---------- */
   const s2 = [
-    D("ancillarum", "rosa", "ancill", null, "ancilla, ae, f", "la servante"), D("agros", "puer", "agr", "ager", "ager, agri, m", "le champ"), R("matri", "matr", "mater", "mater, matris, f", "la mère"),
-    D("nominibus", "corpus", "nomin", "nomen", "nomen, nominis, n", "le nom"), D("templi", "templum", "templ", null, "templum, i, n", "le temple"), D("poetae", "rosa", "poet", null, "poeta, ae, m", "le poète"),
-    D("civibus", "civis", "civ", null, "civis, is, m", "le citoyen"), D("bello", "templum", "bell", null, "bellum, i, n", "la guerre"), D("urbium", "urbs", "urb", "urbs", "urbs, urbis, f", "la ville"),
-    D("domine", "dominus", "domin", null, "dominus, i, m", "le maître"), D("capita", "corpus", "capit", "caput", "caput, capitis, n", "la tête"), D("viam", "rosa", "vi", null, "via, ae, f", "la route"),
-    R("consulis", "consul", "consul", "consul, consulis, m", "le consul"), R("milites", "milit", "miles", "miles, militis, m", "le soldat"), D("rosis", "rosa", "ros", null, "rosa, ae, f", "la rose"),
-    D("pueri", "puer", "puer", "puer", "puer, pueri, m", "l'enfant"), R("legem", "leg", "lex", "lex, legis, f", "la loi"), D("anni", "dominus", "ann", null, "annus, i, m", "l'année"),
-    D("flumine", "corpus", "flumin", "flumen", "flumen, fluminis, n", "le fleuve"), R("regum", "reg", "rex", "rex, regis, m", "le roi")
+    Ro("fugae", "fug", "fuga, ae, f", "la fuite, l'exil"), Te("exilio", "exili", "exilium, ii, n", "l'exil"), Ro("poenarum", "poen", "poena, ae, f", "le châtiment"),
+    R("patri", "patr", "pater", "pater, tris, m", "le père"), R("dolores", "dolor", "dolor", "dolor, oris, m", "la douleur"), Ro("lacrimis", "lacrim", "lacrima, ae, f", "la larme"),
+    Do("uentorum", "uent", "uentus, i, m", "le vent"), Ci("hostes", "host", "hostis, is, m", "l'ennemi"), Ci("naues", "nau", "nauis, is, f", "le navire"),
+    Ur("mortem", "mort", "mors", "mors, mortis, f", "la mort"), Co("carmina", "carmin", "carmen", "carmen, inis, n", "le poème"), Co("uulneribus", "uulner", "uulnus", "uulnus, eris, n", "la blessure"),
+    Te("bello", "bell", "bellum, i, n", "la guerre"), Do("natum", "nat", "natus, i, m", "le fils"), Pu("puero", "puer", "puer", "puer, pueri, m", "l'enfant"),
+    Pu("libri", "libr", "liber", "liber, libri, m", "le livre"), Pu("uiri", "uir", "uir", "uir, uiri, m", "l'homme, le mari"), R("Caesaris", "Caesar", "Caesar", "Caesar, aris, m", "César"),
+    Co("crimina", "crimin", "crimen", "crimen, inis, n", "l'accusation"), Ur("artes", "art", "ars", "ars, artis, f", "l'art")
   ];
   const c2 = ["Gp", "Ds", "Bp", "As", "Np", "Gs"];
 
   /* ---------- Entraînement 3 : D1 à D5 ---------- */
-  const M = (f, rad, e, s, x) => D(f, "manus", rad, null, e, s, x);
-  const Rs = (f, rad, e, s, x) => D(f, "res", rad, null, e, s, x);
   const s3 = [
-    M("manus", "man", "manus, us, f", "la main"), Rs("rei", "r", "res, rei, f", "la chose"), M("exercitui", "exercit", "exercitus, us, m", "l'armée"),
-    Rs("dies", "di", "dies, diei, m", "le jour"), D("cornua", "cornu", "corn", null, "cornu, us, n", "la corne"), Rs("fidem", "fid", "fides, fidei, f", "la fidélité, la confiance"),
-    D("mare", "mare", "mar", null, "mare, maris, n", "la mer"), D("maria", "mare", "mar", null, "mare, maris, n", "la mer"), D("animalia", "animal", "animal", "animal", "animal, animalis, n", "l'animal"),
-    Rs("diebus", "di", "dies, diei, m", "le jour"), M("portus", "port", "portus, us, m", "le port"), Rs("rerum", "r", "res, rei, f", "la chose"),
-    D("cornibus", "cornu", "corn", null, "cornu, us, n", "la corne"), D("noctem", "urbs", "noct", "nox", "nox, noctis, f", "la nuit"), D("nave", "civis", "nav", null, "navis, is, f", "le navire"),
-    D("montium", "urbs", "mont", "mons", "mons, montis, m", "la montagne"), R("rege", "reg", "rex", "rex, regis, m", "le roi"), M("lacu", "lac", "lacus, us, m", "le lac"),
-    Rs("aciei", "aci", "acies, ei, f", "la ligne de bataille"), D("domini", "dominus", "domin", null, "dominus, i, m", "le maître")
+    M("luctus", "luct", "luctus, us, m", "le deuil"), M("metui", "met", "metus, us, m", "la crainte"), M("casum", "cas", "casus, us, m", "le malheur, la chute"),
+    M("fluctibus", "fluct", "fluctus, us, m", "la vague"), M("uersuum", "uers", "uersus, us, m", "le vers"), M("uultu", "uult", "uultus, us, m", "le visage"),
+    M("manibus", "man", "manus, us, f", "la main"), Rs("diei", "di", "dies, ei, m ou f", "le jour"), Rs("diebus", "di", "dies, ei, m ou f", "le jour"),
+    Rs("fidem", "fid", "fides, ei, f", "la fidélité, la confiance"), Rs("spem", "sp", "spes, spei, f", "l'espoir"), Rs("glaciem", "glaci", "glacies, ei, f", "la glace"),
+    Co("frigoris", "frigor", "frigus", "frigus, oris, n", "le froid"), Co("litora", "litor", "litus", "litus, oris, n", "le rivage"), Co("tempori", "tempor", "tempus", "tempus, oris, n", "le temps"),
+    Ur("noctis", "noct", "nox", "nox, noctis, f", "la nuit"), Ci("ratibus", "rat", "ratis, is, f", "le navire, le radeau"), Ro("patriae", "patri", "patria, ae, f", "la patrie"),
+    Do("pontum", "pont", "pontus, i, m", "la mer, le Pont"), Pu("Histri", "Histr", "Hister", "Hister, tri, m", "l'Hister, le Danube")
   ];
   const c3 = ["Ns", "Gs", "Bs", "Dp", "Ap", "Gp"];
 
-  /* ---------- Entraînement 4 : D1 à D5, les pièges ---------- */
+  /* ---------- Entraînement 4 : D1 à D5 ---------- */
   const s4 = [
-    D("nomina", "corpus", "nomin", "nomen", "nomen, nominis, n", "le nom"), D("corpori", "corpus", "corpor", "corpus", "corpus, corporis, n", "le corps"), D("tempora", "corpus", "tempor", "tempus", "tempus, temporis, n", "le temps"),
-    D("itineris", "corpus", "itiner", "iter", "iter, itineris, n", "le chemin"), R("virtutes", "virtut", "virtus", "virtus, virtutis, f", "le courage"), R("patrum", "patr", "pater", "pater, patris, m", "le père"),
-    M("fructus", "fruct", "fructus, us, m", "le fruit"), Rs("spei", "sp", "spes, ei, f", "l'espoir", "<i class=\"la\">spes</i> s'emploie surtout au singulier."), Rs("diei", "di", "dies, diei, m", "le jour"),
-    D("maribus", "mare", "mar", null, "mare, maris, n", "la mer"), D("animali", "animal", "animal", "animal", "animal, animalis, n", "l'animal", "Les neutres en <i class=\"la\">-e</i>, <i class=\"la\">-al</i> font l'ablatif en <i class=\"la\">-i</i>."),
-    D("cives", "civis", "civ", null, "civis, is, m", "le citoyen"), D("ancillis", "rosa", "ancill", null, "ancilla, ae, f", "la servante"), D("agrorum", "puer", "agr", "ager", "ager, agri, m", "le champ"),
-    D("puerorum", "puer", "puer", "puer", "puer, pueri, m", "l'enfant"), D("librum", "puer", "libr", "liber", "liber, libri, m", "le livre"), D("templa", "templum", "templ", null, "templum, i, n", "le temple"),
-    D("genu", "cornu", "gen", null, "genu, us, n", "le genou"), D("nocte", "urbs", "noct", "nox", "nox, noctis, f", "la nuit"), D("pedes", "civis", "ped", null, "pes, pedis, m", "le pied", "Un nom en <i class=\"la\">-es</i> peut être un nominatif, un vocatif et un accusatif pluriel.")
+    Ur("sortem", "sort", "sors", "sors, sortis, f", "le sort, le lot"), Ur("laudes", "laud", "laus", "laus, laudis, f", "la louange, la gloire"), R("fratres", "fratr", "frater", "frater, tris, m", "le frère"),
+    R("matris", "matr", "mater", "mater, tris, f", "la mère"), R("honori", "honor", "honor", "honor, oris, m", "l'honneur"), R("amoribus", "amor", "amor", "amor, oris, m", "l'amour"),
+    R("exulum", "exul", "exul", "exul, ulis, m", "l'exilé"), R("hominem", "homin", "homo", "homo, inis, m", "l'homme"), R("comitibus", "comit", "comes", "comes, itis, m ou f", "le compagnon"),
+    R("uxores", "uxor", "uxor", "uxor, oris, f", "l'épouse"), Co("pectora", "pector", "pectus", "pectus, oris, n", "la poitrine, le cœur"), Co("sidera", "sider", "sidus", "sidus, eris, n", "l'astre"),
+    Co("operi", "oper", "opus", "opus, eris, n", "l'œuvre"), Co("numina", "numin", "numen", "numen, inis, n", "la divinité"), Co("lumine", "lumin", "lumen", "lumen, inis, n", "la lumière"),
+    Do("oculis", "ocul", "oculus, i, m", "l'œil"), Te("uerba", "uerb", "uerbum, i, n", "le mot, la parole"), Te("caelo", "cael", "caelum, i, n", "le ciel"),
+    Ro("Musae", "Mus", "Musa, ae, f", "la Muse"), Ro("poetae", "poet", "poeta, ae, m", "le poète")
   ];
   const c4 = ["Ap", "Ds", "Bp", "Gs", "Np", "Dp"];
 
   PARTIE_BILAN.push({ id: "p10", devoir: "Terminale", titre: "Morphologie : les cinq déclinaisons (TLLCAL1, 2026-2027)",
-    sous: "Spécialité. Le devoir de morphologie donne un nom du lexique et une forme latine : tu analyses la forme, avec tous les cas et nombres possibles. Une fiche de méthode, puis quatre entraînements : le sujet du devoir (D1 à D3), un second sujet, puis deux sujets sur les cinq déclinaisons.",
+    sous: "Spécialité. Le devoir de morphologie donne un nom du lexique et une forme latine : tu analyses la forme, avec tous les cas et nombres possibles. Une fiche de méthode, puis quatre entraînements : le sujet du devoir (D1 à D3), trois sujets construits avec le vocabulaire des Tristes, dont deux sur les cinq déclinaisons.",
     chapitres: [
       fiche,
       entrainement("c80", "Sujet A", "Entraînement 1 : le sujet A (1re, 2e et 3e déclinaisons)", "Le sujet du devoir, tel qu'il a été donné", INTRO, sA, cA),
-      entrainement("c81", "Sujet B", "Entraînement 2 : 1re, 2e et 3e déclinaisons", "Un second sujet sur les trois premières déclinaisons", INTRO, s2, c2),
-      entrainement("c82", "Sujet C", "Entraînement 3 : les cinq déclinaisons", "Les 4e et 5e déclinaisons s'ajoutent aux trois premières", INTRO, s3, c3),
-      entrainement("c83", "Sujet D", "Entraînement 4 : les cinq déclinaisons, les pièges", "Neutres, ablatif en -i, génitif en -ium : les formes qui piègent", INTRO, s4, c4)
+      entrainement("c81", "Sujet B", "Entraînement 2 : 1re, 2e et 3e déclinaisons", "Un second sujet, avec le vocabulaire des Tristes", INTRO, s2, c2),
+      entrainement("c82", "Sujet C", "Entraînement 3 : les cinq déclinaisons", "Les 4e et 5e déclinaisons s'ajoutent aux trois premières, avec le vocabulaire des Tristes", INTRO, s3, c3),
+      entrainement("c83", "Sujet D", "Entraînement 4 : les cinq déclinaisons (suite)", "Encore des noms du vocabulaire des Tristes, sur les cinq déclinaisons", INTRO, s4, c4)
     ] });
 })();
