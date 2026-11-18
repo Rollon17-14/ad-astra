@@ -61,25 +61,25 @@ ${tab("corpus")}${tab("mare")}${tab("animal")}` },
       { t: "lecon", titre: "Les quatrième et cinquième déclinaisons", texte: `${tab("manus")}${tab("cornu")}${tab("res")}` }
     ] };
 
-  /* ---------- Sujet A : le sujet du devoir, tel que posé ---------- */
   const R = (f, rad, ns, e, s, x) => D(f, "consul", rad, ns, e, s, x);
-  const sA = [
-    R("reges", "reg", "rex", "rex, regis, m", "le roi"), D("ancillae", "rosa", "ancill", null, "ancilla, ae, f", "la servante"), D("agris", "puer", "agr", "ager", "ager, agri, m", "le champ"),
-    R("matrem", "matr", "mater", "mater, matris, f", "la mère"), D("templo", "templum", "templ", null, "templum, i, n", "le temple"), D("nomini", "corpus", "nomin", "nomen", "nomen, nominis, n", "le nom"),
-    D("poetam", "rosa", "poet", null, "poeta, ae, m", "le poète"), D("civium", "civis", "civ", null, "civis, is, m", "le citoyen"), D("bella", "templum", "bell", null, "bellum, i, n", "la guerre"),
-    D("urbe", "urbs", "urb", "urbs", "urbs, urbis, f", "la ville"), D("dominos", "dominus", "domin", null, "dominus, i, m", "le maître"), D("capite", "corpus", "capit", "caput", "caput, capitis, n", "la tête"),
-    D("viis", "rosa", "vi", null, "via, ae, f", "la route"), R("consulum", "consul", "consul", "consul, consulis, m", "le consul"), R("militibus", "milit", "miles", "miles, militis, m", "le soldat"),
-    D("rosarum", "rosa", "ros", null, "rosa, ae, f", "la rose"), D("puero", "puer", "puer", "puer", "puer, pueri, m", "l'enfant"), R("leges", "leg", "lex", "lex, legis, f", "la loi"),
-    D("anno", "dominus", "ann", null, "annus, i, m", "l'année"), D("flumina", "corpus", "flumin", "flumen", "flumen, fluminis, n", "le fleuve")
-  ];
-  const cA = ["Ns", "As", "Bs", "Dp", "Gp", "Np"];
-
   const M = (f, rad, e, s, x) => D(f, "manus", rad, null, e, s, x);
   const Rs = (f, rad, e, s, x) => D(f, "res", rad, null, e, s, x);
   /* Les trois entraînements suivants : vocabulaire des Tristes, formes régulières */
   const Ro = (f, rad, e, s) => D(f, "rosa", rad, null, e, s), Do = (f, rad, e, s) => D(f, "dominus", rad, null, e, s), Pu = (f, rad, ns, e, s) => D(f, "puer", rad, ns, e, s);
   const Te = (f, rad, e, s) => D(f, "templum", rad, null, e, s), Co = (f, rad, ns, e, s) => D(f, "corpus", rad, ns, e, s), Ci = (f, rad, e, s) => D(f, "civis", rad, null, e, s);
   const Ur = (f, rad, ns, e, s) => D(f, "urbs", rad, ns, e, s);
+
+  /* ---------- Entraînement 1 : D1, D2, D3 (vocabulaire des Tristes) ---------- */
+  const sA = [
+    Ro("culpae", "culp", "culpa, ae, f", "la faute"), Ro("iram", "ir", "ira, ae, f", "la colère"), Ro("fortunam", "fortun", "fortuna, ae, f", "le sort, la fortune"),
+    Ro("undis", "und", "unda, ae, f", "la vague, l'onde"), Ro("uiarum", "ui", "uia, ae, f", "le chemin, la route"), Ro("terrae", "terr", "terra, ae, f", "la terre"),
+    Te("telo", "tel", "telum, i, n", "le trait, l'arme de jet"), Te("fato", "fat", "fatum, i, n", "le destin"), Te("uotorum", "uot", "uotum, i, n", "le vœu"),
+    Te("malis", "mal", "malum, i, n", "le malheur, le mal"), Do("equos", "equ", "equus, i, m", "le cheval"), Do("amici", "amic", "amicus, i, m", "l'ami"),
+    Do("populo", "popul", "populus, i, m", "le peuple"), R("patrem", "patr", "pater", "pater, tris, m", "le père"), R("fratri", "fratr", "frater", "frater, tris, m", "le frère"),
+    Ur("mortis", "mort", "mors", "mors, mortis, f", "la mort"), Co("nominis", "nomin", "nomen", "nomen, inis, n", "le nom"), Co("funera", "funer", "funus", "funus, eris, n", "la mort, les funérailles"),
+    Ro("turbae", "turb", "turba, ae, f", "la foule"), Ci("sodalium", "sodal", "sodalis, is, m", "le compagnon, l'ami intime")
+  ];
+  const cA = ["Ds", "Gp", "As", "Bp", "Np", "Gs"];
 
   /* ---------- Entraînement 2 : D1, D2, D3 ---------- */
   const s2 = [
@@ -118,10 +118,10 @@ ${tab("corpus")}${tab("mare")}${tab("animal")}` },
   const c4 = ["Ap", "Ds", "Bp", "Gs", "Np", "Dp"];
 
   PARTIE_BILAN.push({ id: "p10", devoir: "Terminale", titre: "Morphologie : les cinq déclinaisons (TLLCAL1, 2026-2027)",
-    sous: "Spécialité. Le devoir de morphologie donne un nom du lexique et une forme latine : tu analyses la forme, avec tous les cas et nombres possibles. Une fiche de méthode, puis quatre entraînements : le sujet du devoir (D1 à D3), trois sujets construits avec le vocabulaire des Tristes, dont deux sur les cinq déclinaisons.",
+    sous: "Spécialité. Le devoir de morphologie donne un nom du lexique et une forme latine : tu analyses la forme, avec tous les cas et nombres possibles. Une fiche de méthode, puis quatre entraînements construits avec le vocabulaire des Tristes : deux sujets sur les trois premières déclinaisons (D1 à D3), puis deux sujets sur les cinq déclinaisons.",
     chapitres: [
       fiche,
-      entrainement("c80", "Sujet A", "Entraînement 1 : le sujet A (1re, 2e et 3e déclinaisons)", "Le sujet du devoir, tel qu'il a été donné", INTRO, sA, cA),
+      entrainement("c80", "Sujet A", "Entraînement 1 : 1re, 2e et 3e déclinaisons", "Le format du devoir, avec le vocabulaire des Tristes", INTRO, sA, cA),
       entrainement("c81", "Sujet B", "Entraînement 2 : 1re, 2e et 3e déclinaisons", "Un second sujet, avec le vocabulaire des Tristes", INTRO, s2, c2),
       entrainement("c82", "Sujet C", "Entraînement 3 : les cinq déclinaisons", "Les 4e et 5e déclinaisons s'ajoutent aux trois premières, avec le vocabulaire des Tristes", INTRO, s3, c3),
       entrainement("c83", "Sujet D", "Entraînement 4 : les cinq déclinaisons (suite)", "Encore des noms du vocabulaire des Tristes, sur les cinq déclinaisons", INTRO, s4, c4)
